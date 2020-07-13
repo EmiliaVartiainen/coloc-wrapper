@@ -12,6 +12,9 @@ library("readr")
 library("coloc")
 library("GenomicRanges")
 library("Rsamtools")
+library("plyr")
+library("data.table")
+library("stringr")
 ```
 
 # Load eQTL catalogues 
@@ -75,33 +78,172 @@ import_eQTLCatalogue <- function(ftp_path, region, column_names){
 }
 ```
 
+# Run coloc function 
+
+```{r run_coloc}
+#' @param top_loci a data frame with the loci 
+#' @param eqtl eQTL_data_name, has a path to the eQTL catalogue
+#' @param gwas a path to the gwas data 
+#' @param n the number of samples cases + controls
+#' @param s for a case control dataset, the proportion of samples in dataset 1 that are cases
+#' @param plot logical, if the variants are plotted or not
+#' @param endpoint FinnGen endpoint
+#' @param eqtl_name eQTL catalogue data set name 
+#' @param tissue eQTL catalogue data set tissue 
+
+run_coloc <- function(top_loci, eqtl, gwas, n, s, endpoint, eqtl_name, tissue) {
+  
+  coloc_df <- data.frame(locus = character(0), finngen_endpoint = character(0), eQTL_dataset = character(0), gene = character(0), 
+                         tissue = character(0), nsnps = numeric(0), PP.H0.abf = numeric(0), PP.H1.abf = numeric(0),
+                         PP.H2.abf = numeric(0), PP.H3.abf = numeric(0), PP.H4.abf = numeric(0))
+  
+  for (i in 1:nrow(top_loci)) {
+    region_granges = GenomicRanges::GRanges( # define the genomic region 
+      seqnames = as.vector(top_loci$chr[i]), 
+      ranges = IRanges::IRanges(start = as.vector(top_loci$start[i]), end = as.vector(top_loci$end[i])), 
+      strand = "*") 
+    
+    #region <- paste0(top_loci$chr[i], ":", top_loci$start[i], "-", top_loci$end[i]) # the region as a string
+    
+    eqtl_region <- import_eQTLCatalogue(eqtl$ftp_path, region_granges, colnames(readr::read_tsv(eqtl$ftp_path, n_max = 1))) # read the eQTL catalogue and filter the variants to the region
+    gwas_region <- scanTabix(gwas, index = paste(eqtl, "tbi", sep = "."), param = region_granges) # read the GWAS file and filter the variants to the region 
+    gwas_region <- str_replace(gwas_region[[1]], "\t\t", "\tNA\t") # handle empty columns 
+    gwas_region <- read.table(text = gwas_region, sep = "\t") # create a data frame 
+    gwas_region$variant <- paste(paste0("chr", gwas_region$chrom), gwas_region$pos, gwas_region$ref, gwas_region$alt, sep = "_")
+    colnames(gwas_region) <- colnames(read.csv("/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_I9_VARICVE_top_loci.tsv", sep = "\t", header = TRUE, nrows = 1))
+    colnames(gwas_region)[1] <- "chrom"
+    
+    for (j in eqtl_region$gene_id) { # Goes through all the genes in eQTL data set and runs coloc for each of them 
+      eqtl_subset <- eqtl_region[which(eqtl_region$gene_id == j),] # subset of the eQTL data set based on the gene id 
+      gwas_subset <- subset(gwas_region, gwas_region$variant %in% eqtl_subset$variant) # subset of the GWAS data set based on the variant 
+      eqtl_subset <- subset(eqtl_subset, eqtl_subset$variant %in% gwas_subset$variant)
+      print("Hello 1")
+      gwas_subset <- gwas_subset[order(as.vector(gwas_subset$variant)),]
+      eqtl_subset <- eqtl_subset[order(as.vector(eqtl_subset$variant)),]
+      print("Hello 2")
+      colnames(gwas_subset)[which(colnames(gwas_subset) == "variant")] <- "snp"
+      colnames(eqtl_subset)[which(colnames(eqtl_subset) == "variant")] <- "snp"
+      
+      eQTL_dataset = list(pvalues = eqtl_subset$pvalue, 
+                      N = (eqtl_subset$an)[1]/2, # Samples size is allele number (AN) divided by 2
+                      MAF = eqtl_subset$maf, 
+                      type = "quant", 
+                      beta = eqtl_subset$beta,
+                      snp = eqtl_subset$snp)
+      gwas_dataset = list(beta = gwas_subset$beta,
+                      varbeta = gwas_subset$sebeta^2, # variance of beta, sebeta = standard error of beta 
+                      type = "cc", 
+                      snp = gwas_subset$snp,
+                      MAF = gwas_subset$maf, 
+                      N = n, 
+                      s = s) 
+      coloc_res = coloc::coloc.abf(dataset1 = eQTL_dataset, dataset2 = gwas_dataset, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5)
+      res_formatted = as.data.frame(coloc_res$summary)
+      
+      results <- c(top_loci$locus_id[i], endpoint, eqtl_name, j, tissue, res_formatted)
+      coloc_df <- rbind(coloc_df, results )
+    }
+  }
+  return(coloc_df)
+}
+
+```
+
+# Run coloc analysis 
+
+``` {r coloc_analysis}
+eQTL_data_name = dplyr::filter(tabix_paths, study == "Lepik_2017", tissue_label == "blood")[1,] # Specify which eQTL dataset is going to be used 
+
+GWAS_path_VARICVE <- c("/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_I9_VARICVE.gz")
+GWAS_path_ICP <- c("/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_O15_ICP.gz")
+
+top_variants_VARICVE <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Data/I9_VARICVE.top.out", sep = "\t", header = TRUE)
+top_variants_VARICVE <- top_variants_VARICVE[which(top_variants_VARICVE$chr != 23),]
+
+top_variants_ICP <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Data/O15_ICP.top.out", sep = "\t", header = TRUE)
+top_variants_ICP <- top_variants_ICP[which(top_variants_ICP$chr != 23),]
+
+coloc_VARICVE <- run_coloc(top_variants_VARICVE[1,], eQTL_data_name, GWAS_path_VARICVE, n = 207055, s = 17027/207055, endpoint = "Varicose veins", 
+                           eqtl_name = "Lepik_2017", tissue = "blood")
+coloc_VARICVE <- run_coloc(top_variants_ICP, eQTL_data_name, GWAS_path_ICP, n = 123579, s = 940/123579, endpoint = "Intrahepatic Cholestasis of Pregnancy (ICP)Ê", 
+                           eqtl_name = "Lepik_2017", tissue = "blood")
+```
+
+
+# From here on just draft, not important 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Determine the genomic loci we're using in colc analysis
 
 ``` {r region_ranges}
-top_variants <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Data/I9_VARICVE.top.out", sep = "\t", header = TRUE)
-top_variants <- top_variants[which(top_variants$chr != 23),]
+top_variants_VARICVE <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Data/I9_VARICVE.top.out", sep = "\t", header = TRUE)
+top_variants_VARICVE <- top_variants_VARICVE[which(top_variants_VARICVE$chr != 23),]
 
-region_granges = GenomicRanges::GRanges(
-  seqnames = as.vector(top_variants$chr), 
-  ranges = IRanges::IRanges(start = as.vector(top_variants$start), end = as.vector(top_variants$end)), 
+region_granges_VARICVE = GenomicRanges::GRanges(
+  seqnames = as.vector(top_variants_VARICVE$chr[1]), 
+  ranges = IRanges::IRanges(start = as.vector(top_variants_VARICVE$start[1]), end = as.vector(top_variants_VARICVE$end)[1]), 
+  strand = "*") 
+
+top_variants_ICP <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Data/O15_ICP.top.out", sep = "\t", header = TRUE)
+top_variants_ICP <- top_variants_ICP[which(top_variants_ICP$chr != 23),]
+
+region_granges_ICP = GenomicRanges::GRanges(
+  seqnames = as.vector(top_variants_ICP$chr), 
+  ranges = IRanges::IRanges(start = as.vector(top_variants_ICP$start), end = as.vector(top_variants_ICP$end)), 
   strand = "*") 
 ```
+
 
 # Determine the eQTL dataset we're using and select the genonic loci, they are in summary_stats variable 
 
 ``` {r eQTL_summary_stats}
-eQTL_data_name = dplyr::filter(tabix_paths, study == "CEDAR", tissue_label == "platelet") # Specify which eQTL dataset is going to be used 
+eQTL_data_name = dplyr::filter(tabix_paths, study == "Lepik_2017", tissue_label == "blood")[1,] # Specify which eQTL dataset is going to be used 
 
 #Extract column names from first file
-column_names = colnames(readr::read_tsv(eQTL_data_name$ftp_path[1])) 
+column_names = colnames(readr::read_tsv(eQTL_data_name$ftp_path, n_max = 1)) 
 
-summary_stats = import_eQTLCatalogue(eQTL_data_name$ftp_path, region_granges, column_names) # These are the eQTL summary statistics for "region_granges" genomic loci
+eQTL_VARICVE = import_eQTLCatalogue(eQTL_data_name$ftp_path, region_granges_VARICVE, column_names) # These are the eQTL summary statistics for "region_granges" genomic loci
+eQTL_ICP = import_eQTLCatalogue(eQTL_data_name$ftp_path, region_granges_ICP, column_names)
 ```
 
+# Read the FinnGen GWAS summary statistics files 
+
+``` {r load_GWAS}
+gwas_VARICVE <- fread("/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_I9_VARICVE_top_loci.tsv", sep = "\t", header = TRUE)
+colnames(gwas_VARICVE)[1:2] <- c("chromosome", "position")
+gwas_ICP <- fread("/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_O15_ICP_top_loci.tsv", sep = "\t", header = TRUE)
+colnames(gwas_ICP)[1] <- "chrm"
+```
+
+``` {r run_coloc1}
 
 
+run_coloc <- function(eqtl_sumstats, gwas_sumstats, n){ # n is the number of samples for GWAS file , get it from a file Sina sent 
+  eQTL_dataset = list(pvalues = eqtl_sumstats$pvalue, 
+                      N = (eqtl_sumstats$an)[1]/2, # Samples size is allele number (AN) dvided by 2
+                      MAF = eqtl_sumstats$maf, 
+                      type = "quant", 
+                      beta = eqtl_sumstats$beta,
+                      snp = eqtl_sumstats$rsid)
+  gwas_dataset = list(beta = gwas_sumstats$beta,
+                      varbeta = gwas_sumstats$sebeta^2, # variance of beta, have to be the same length with beta  
+                      type = "cc", 
+                      snp = gwas_sumstats$rsids,
+                      MAF = gwas_sumstats$maf, 
+                      N = n) 
+  coloc_res = coloc::coloc.abf(dataset1 = eQTL_dataset, dataset2 = gwas_dataset, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5)
+  res_formatted = dplyr::as_tibble(t(as.data.frame(coloc_res$summary)))
+  return(coloc_res)
+}
 
-
+gwas_VARICVE$variant <- paste(paste0("chr", gwas_VARICVE$chromosome), gwas_VARICVE$position, gwas_VARICVE$ref, gwas_VARICVE$alt, sep = "_") 
+eqtl_subset <- eQTL_VARICVE[which(eQTL_VARICVE$gene_id == eQTL_VARICVE$gene_id[1]),] # subset of the eQTL data set based on the gene id 
+gwas_subset <- subset(gwas_VARICVE, variant %in% eqtl_subset$variant)
+eqtl_subset <- subset(eqtl_subset, variant %in% gwas_subset$variant)
+      
+coloc_VARICVE <- run_coloc(eqtl_subset, gwas_subset, n=17027) 
+coloc_ICP <- run_coloc(eQTL_ICP, gwas_ICP, n=940)
+```
 
 
 
