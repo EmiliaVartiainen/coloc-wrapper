@@ -42,19 +42,22 @@ input <- merge(df_gwas, df_eqtl, by = "varid", suffixes = c("_gwas", "_eqtl"), a
 dataset_gwas <- list(
     beta = input$beta_gwas,
     varbeta = input$se_gwas^2,
-   # pvalues = input$pval_gwas, 
+ #   pvalues = input$pval_gwas, 
     MAF = input$maf_gwas,
     type = "cc", 
     s = 11006/117692, 
-    sdY = 1,
+  #  sdY = 1,
+    snp = input$varid,
     N = n_gwas)
+
 dataset_eqtl <- list(
     beta = input$beta_eqtl,
     varbeta = input$se_eqtl^2,
-   # pvalues = input$pval_eqtl, 
+  #  pvalues = input$pval_eqtl, 
     MAF = input$maf_eqtl,
     type = "quant", 
     sdY = 1,
+    snp = input$varid,
     N = n_eqtl)
 
 ## sensitivity --------------------------
@@ -68,8 +71,8 @@ result <- coloc::coloc.signals(
     p12 = p12, 
     p1 = p1, 
     p2 = p2, 
-    r2thr=0.001, 
-    pthr = 1e-6,
+  #  r2thr=0.00001, 
+ #   pthr = 1e-1,
     method = "mask"
      )
 
