@@ -2,11 +2,10 @@
 
 ## Usage
 ```
-Rscript run_coloc.R	\
-	--gwasSumstats=finngen_R5_I9_VARICVE.gz \
-	--gwasSumstatsTop=finngen_R5_I9_VARICVE_top_loci.tsv \
-	--eqtlSumstats=eqtl_catalog_Lepik_2017.txt.gz \
-    --outDir=pathtooutputdirectory
+Rscript /COLOC/run_coloc.R	\
+	--eqtl=/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv \
+	--gwas=/COLOC/extdata/I9_VARICVE_chr1.tsv \
+    --out=tmp
 ```	
 
 ## Extdata
