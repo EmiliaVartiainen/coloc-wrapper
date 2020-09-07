@@ -2,7 +2,13 @@
 
 ## Usage
 ```
-Rscript /COLOC/run_coloc.R	\
+Rscript extdata/step1_subset_data.R	\
+	--eqtl=ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/Lepik_2017/ge/Lepik_2017_ge_blood.all.tsv.gz\
+	--gwas=I9_VARICVE.gz \
+	--region="1:10565520-10965520" \
+    --out=tmp
+
+Rscript extdata/step2_run_coloc.R	\
 	--eqtl=/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv \
 	--gwas=/COLOC/extdata/I9_VARICVE_chr1.tsv \
     --out=tmp
