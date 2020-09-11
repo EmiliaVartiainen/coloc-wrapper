@@ -1,6 +1,6 @@
 
 
-subset_data <- function(eqtl = ftp-url, gwas = file, region = "chr:start-end") {
+subset_data <- function(eqtl = ftp-url, gwas = file, region = "chr:start-end", out = outdir) {
 
     ## if eqtl eQTLCatalogue url
     

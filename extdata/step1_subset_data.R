@@ -7,8 +7,11 @@ suppressMessages(library(data.table))
 option_list <- list(
     optparse::make_option(c("--eqtl"), type="character", default= "/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv",help="eQTL summary stats for one region"),
     optparse::make_option(c("--gwas"), type="character", default="/COLOC/extdata/I9_VARICVE_chr1.tsv", help = "GWAS summary stats for 1 region") ,
+    optparse::make_option(c("--region"), type="character", default="chr:start-pos", help = "region") ,
     optparse::make_option(c("--out"), type="character", default="/COLOC/out.txt", help = "outputfile") 
 )
 
+opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
 
-subset_data()
+
+subset_data(eqtl = opt$eqtl, gwas = opt$gwas, region = opt$region, out = opt$out)
