@@ -69,7 +69,6 @@ import_eQTLCatalogue <- function(ftp_path, region, column_names){
   #Fetch summary statistics with Rsamtools
   summary_stats = suppressMessages(scanTabixDataFrame(ftp_path, region, col_names = column_names)[[1]])
   print(head(summary_stats))
-  # Should I remove the duplicates?
   # Remove rsid duplicates and multi-allelic variant
   if (!is.null(summary_stats)){
     summary_stats = dplyr::select(summary_stats, -rsid) %>% 
@@ -106,7 +105,7 @@ run_coloc <- function(top_loci, eqtl, gwas, n, s, endpoint, eqtl_name, tissue, f
                          Tissue = character(0), nsnps = numeric(0), PP.H0 = numeric(0), PP.H1 = numeric(0),
                          PP.H2 = numeric(0), PP.H3 = numeric(0), PP.H4 = numeric(0))
   
-  write.table(coloc_df, file = paste0("/Users/eahvarti/Documents/Coloc_analysis/Results/", file), sep = "\t")
+  write.table(coloc_df, file = paste0("/Users/eahvarti/Documents/coloc_analysis/Results/GTEx_results/", file), sep = "\t")
   
   for (i in 1:nrow(top_loci)) {
     region_granges = GenomicRanges::GRanges( # define the genomic region 
@@ -114,7 +113,8 @@ run_coloc <- function(top_loci, eqtl, gwas, n, s, endpoint, eqtl_name, tissue, f
       ranges = IRanges::IRanges(start = as.vector(top_loci$start[i]), end = as.vector(top_loci$end[i])), 
       strand = "*") 
     
-    print(paste0(top_loci$chr[i], ":", top_loci$start[i], "-", top_loci$end[i]))
+    locus <- paste0(top_loci$chr[i], ":", top_loci$start[i], "-", top_loci$end[i])
+    print(locus)
     
     eqtl_region <- import_eQTLCatalogue(eqtl$ftp_path, region_granges, colnames(readr::read_tsv(eqtl$ftp_path, n_max = 1))) # read the eQTL catalogue and filter the variants to the region
     
@@ -155,7 +155,7 @@ run_coloc <- function(top_loci, eqtl, gwas, n, s, endpoint, eqtl_name, tissue, f
         
         results <- data.frame(top_loci$locus_id[i], endpoint, eqtl_name, j, tissue, res_formatted)
         coloc_df <- rbind(coloc_df, results )
-        write(as.matrix(results[1,]), file = paste0("/Users/eahvarti/Documents/Coloc_analysis/Results/", file), sep = "\t", append = TRUE, ncolumns = 11)
+        write(as.matrix(results[1,]), file = paste0("/Users/eahvarti/Documents/coloc_analysis/Results/GTEx_results/", file), sep = "\t", append = TRUE, ncolumns = 11)
       }
     }
   }
@@ -201,7 +201,7 @@ plot_loci <- function(top_loci, eqtl, gwas, results) {
           H3 <- results$PP.H3[which(results$Gene_ID == gene)]
           H4 <- results$PP.H4[which(results$Gene_ID == gene)]
           
-          if (max(H4) > 0.75 | max(H3) > 0.75) { # Plot the genes that are important with threshold 
+          if (max(H4) > 0) { # Plot the genes that are important with threshold 
             eqtl_subset <- eqtl_region[which(eqtl_region$gene_id == j),] # subset of the eQTL data set based on the gene id 
             names(eqtl_subset) <- paste0(names(eqtl_subset), ".eqtl")
             dat_subset <- eqtl_subset %>% inner_join(gwas_region, by = c("snp.eqtl" = "snp.gwas"))
@@ -235,7 +235,8 @@ plot_loci <- function(top_loci, eqtl, gwas, results) {
 # Run coloc analysis 
 
 ```{r, coloc_analysis}
-eQTL_data_name = dplyr::filter(tabix_paths, study == "Lepik_2017", tissue_label == "blood")[1,] # Specify which eQTL dataset is going to be used 
+eQTL_data_name = dplyr::filter(tabix_paths, study == "GENCORD", tissue_label == "LCL")[1,] # Specify which eQTL dataset is going to be used 
+eQTL_data_name = dplyr::filter(imported_tabix_paths, qtl_group == "Adipose_Subcutaneous") # Specify which eQTL dataset is going to be used, GTEx data
 
 GWAS_path_VARICVE <- c("/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_I9_VARICVE.gz")
 GWAS_path_ICP <- c("/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_O15_ICP.gz")
@@ -247,18 +248,35 @@ top_variants_ICP <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Data/O15_
 top_variants_ICP <- top_variants_ICP[which(top_variants_ICP$chr != 23),]
 
 coloc_VARICVE <- run_coloc(top_variants_VARICVE, eQTL_data_name, GWAS_path_VARICVE, n = 207055, s = 17027/207055, endpoint = "Varicose veins", 
-                           eqtl_name = "Lepik_2017", tissue = "blood", "coloc_VARICVE_results.txt") 
+                           eqtl_name = "GENCORD", tissue = "LCL", "coloc_VARICVE_results_Adipose_Subcutaneous.txt") 
 coloc_ICP <- run_coloc(top_variants_ICP, eQTL_data_name, GWAS_path_ICP, n = 123579, s = 940/123579, endpoint = "Intrahepatic Cholestasis of Pregnancy (ICP)Ê", 
-                           eqtl_name = "Lepik_2017", tissue = "blood", "coloc_ICP_results.txt")
+                           eqtl_name = "GENCORD", tissue = "LCL", "coloc_ICP_results_GENCORD_LCL.txt")
 
 # Plot the loci
 # Plots the genes that have PP3 or PP4 > threshold, this can be changed in the if loop 
 plot_loci(top_variants_VARICVE[which(top_variants_VARICVE$locus_id == "chr7_22728289_C_G"),], eQTL_data_name, GWAS_path_VARICVE, results)
+
+# Run COLOC to all the GTEx tissues 
+for (tissue in unique(imported_tabix_paths$tissue_label)[17:49]) {
+  print(tissue)
+  eQTL_data_name = dplyr::filter(imported_tabix_paths, tissue_label == tissue) # Specify which eQTL dataset is going to be used, GTEx data
+  
+  coloc_VARICVE <- run_coloc(top_variants_VARICVE, eQTL_data_name, GWAS_path_VARICVE, n = 207055, s = 17027/207055, endpoint = "Varicose veins", 
+                           eqtl_name = "GTEx_V8", tissue = tissue, file = paste0("coloc_VARICVE_results_", 
+                                                                                 imported_tabix_paths$qtl_group[which(imported_tabix_paths$tissue_label == tissue)], ".txt"))
+  #print(paste("Coloc VARICVE", tissue, "done!"))
+  #coloc_ICP <- run_coloc(top_variants_ICP, eQTL_data_name, GWAS_path_ICP, n = 123579, s = 940/123579, endpoint = "Intrahepatic Cholestasis of Pregnancy (ICP)Ê", 
+  #                         eqtl_name = "GTEx_V8", tissue = tissue, file = paste0("coloc_ICP_results_", 
+  #                                                                               imported_tabix_paths$qtl_group[which(imported_tabix_paths$tissue_label == tissue)], ".txt"))
+  #print(paste("Coloc ICP", tissue, "done!"))
+}
+
+
 ```
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Results 
+# Results VARICVE
 
 ```{r, top_results}
 results <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Results/coloc_VARICVE_results.txt", header = TRUE, sep = "\t")
@@ -433,11 +451,172 @@ plot7 <- ggplot(data = results, aes(x = PP.H4)) + geom_density() + geom_vline(ae
                 geom_vline(aes(xintercept = c(0.7)), linetype = 3, color = "black") + ggtitle("Density Plot of PP4") + theme_light()
 ```
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Results ICP
+
+```{r, top_results}
+results <- read.csv("/Users/eahvarti/Documents/coloc_analysis/Results/coloc_ICP_results.txt", header = TRUE, sep = "\t")
+names(results)[which(names(results) == "Gene_ID")] <- "Ensembl_ID"
+
+# Convert ensembl ids to gene names and add column to data frame 
+ensembl = useMart("ensembl", host="useast.ensembl.org", ensemblRedirect = FALSE) # From biomaRt package
+mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+gene_table <- getBM(filters="ensembl_gene_id", attributes=c("ensembl_gene_id",
+                                              "hgnc_symbol"),
+      values=results$Ensembl_ID, mart=mart) # Ensembl ids and gene names (NOTE: a pain to run)
+names(gene_table) <- c("Ensembl_ID", "Gene_ID")
+results <- inner_join(results, gene_table, by = "Ensembl_ID")
+results[results == ""] <- NA
+
+top_results_08 <- results[which(results$PP.H3 > 0.8 | results$PP.H4 > 0.8),]
+names(top_results_08)[12] <- "Gene_ID_top"
+top_results_075 <- results[which(results$PP.H3 > 0.75 | results$PP.H4 > 0.75),]
+names(top_results_075)[12] <- "Gene_ID_top"
+top_results_05 <- results[which(results$PP.H3 > 0.5 | results$PP.H4 > 0.5),]
+names(top_results_05)[12] <- "Gene_ID_top"
+
+top_results_08_H3 <- results[which(results$PP.H3 > 0.8),]
+names(top_results_08_H3)[12] <- "Gene_ID_H3"
+top_results_075_H3 <- results[which(results$PP.H3 > 0.75),]
+names(top_results_075_H3)[12] <- "Gene_ID_H3"
+top_results_05_H3 <- results[which(results$PP.H3 > 0.5),]
+names(top_results_05_H3)[12] <- "Gene_ID_H3"
+top_results_08_H4 <- results[which(results$PP.H4 > 0.8),]
+names(top_results_08_H4)[12] <- "Gene_ID_H4"
+top_results_075_H4 <- results[which(results$PP.H4 > 0.75),]
+names(top_results_075_H4)[12] <- "Gene_ID_H4"
+top_results_05_H4 <- results[which(results$PP.H4 > 0.5),]
+names(top_results_05_H4)[12] <- "Gene_ID_H4"
+
+# H3 = "association to both traits, distinct causal variants"
+# H4 = "association to both traits, shared causal variant" 
+
+top3_H3 <- data.frame(Locus = character(0), FinnGen_Endpoint = character(0), eQTL_dataset = character(0), Ensembl_ID = character(0), 
+                         Tissue = character(0), nsnps = numeric(0), PP.H0 = numeric(0), PP.H1 = numeric(0),
+                         PP.H2 = numeric(0), PP.H3 = numeric(0), PP.H4 = numeric(0), Gene_ID_H3 = character(0))
+top3_H4 <- data.frame(Locus = character(0), FinnGen_Endpoint = character(0), eQTL_dataset = character(0), Ensembl_ID = character(0), 
+                         Tissue = character(0), nsnps = numeric(0), PP.H0 = numeric(0), PP.H1 = numeric(0),
+                         PP.H2 = numeric(0), PP.H3 = numeric(0), PP.H4 = numeric(0), Gene_ID_H4 = character(0))
+names3 <- names(top3_H3)
+names4 <- names(top3_H4)
+
+# Data frames top3_H3 and top3_H4 have the top 3 genes with highest p-values for hypothesis H3 and H4 
+for (locus in unique(results$Locus)) { 
+  group <- results[which(results$Locus == locus),]
+  top3_H3 <- rbind(top3_H3, group[order(-group$PP.H3)[1:3],])
+  top3_H4 <- rbind(top3_H4, group[order(-group$PP.H4)[1:3],])
+}
+names(top3_H3) <- names3
+names(top3_H4) <- names4
+
+# Loci that have both PP3 and PP4 > 0.5
+top_loci <- results[which(results$PP.H3 > 0.5 & results$PP.H4 > 0.5),] # None! with > 0.3 there are 9 loci
+```
 
 
+# Visualizing the results 
+
+```{r, filter_results}
+# All the genes plotted, genes with the H4 top 3 genes for each loci named 
+plot_df <- full_join(results, top3_H4[c("Locus", "Ensembl_ID", "PP.H4", "Gene_ID_H4")], by = c("Locus", "Ensembl_ID", "PP.H4"))
+plot_df$Chrom <- sapply(strsplit(as.character(plot_df$Locus), "_", fixed = TRUE), function(x) x[1]) # Trims the chrom number out of Locus
+plot_df$Chrom <- as.numeric(gsub("chr", "", plot_df$Chrom))
+plot_df <- melt(plot_df[, -c(7:9)], id = c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID", "Gene_ID_H4"))
+#plot_df$Gene_ID_H4[which(!is.na(plot_df$Gene_ID_H4) & plot_df$value < 0.75)] <- NA
+plot_df$Gene_ID_H4[which(!is.na(plot_df$Gene_ID_H4) & plot_df$variable == "PP.H3")] <- NA
+names(plot_df) <- c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID", "Gene_top_H4", "Hypothesis", "value")
+plot_df <- plot_df[-which(is.na(plot_df$Locus)),]
+plot_df$Gene_ID[which(plot_df$value < 0.5)] <- NA
+
+plot1 <- ggplot(data = plot_df, aes(x = value, y = Locus, color = Hypothesis, label = Gene_ID)) + geom_point(size = 0.6) + theme_light() +
+                facet_grid(Chrom ~ . , scales = "free_y", space = "free") + scale_color_manual(values = c("PP.H3" = 'indianred4','PP.H4' = 'deepskyblue4')) + 
+                labs(title = "Colocalization Results All Loci, Top H4 Genes Named", 
+                     subtitle = paste(paste0("Endpoint: ", plot_df$FinnGen_Endpoint[1]), paste0("Tissue: ", plot_df$Tissue[1]), 
+                                      paste0("eQTL Dataset: ", plot_df$eQTL_dataset[1]), sep = ", "), x = "p-value", y = "") + 
+                theme(plot.title = element_text(size = 12), plot.subtitle = element_text(size = 9), axis.text = element_text(size = 7)) + 
+                geom_text(size=3, check_overlap = TRUE, hjust = 0, nudge_x = 0.005) + scale_x_reverse()
+            
+
+# All the genes plotted, genes with the H3 top 3 genes for each loci named 
+plot_df <- full_join(results, top3_H3[c("Locus", "Ensembl_ID", "PP.H3", "Gene_ID_H3")], by = c("Locus", "Ensembl_ID", "PP.H3"))
+plot_df$Chrom <- sapply(strsplit(as.character(plot_df$Locus), "_", fixed = TRUE), function(x) x[1]) # Trims the chrom number out of Locus
+plot_df$Chrom <- as.numeric(gsub("chr", "", plot_df$Chrom))
+plot_df <- melt(plot_df[, -c(7:9)], id = c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID", "Gene_ID_H3"))
+#plot_df$Gene_ID_H4[which(!is.na(plot_df$Gene_ID_H4) & plot_df$value < 0.75)] <- NA
+plot_df$Gene_ID_H3[which(!is.na(plot_df$Gene_ID_H3) & plot_df$variable == "PP.H4")] <- NA
+names(plot_df) <- c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID", "Gene_top_H3", "Hypothesis", "value")
+plot_df <- plot_df[-which(is.na(plot_df$Locus)),]
+plot_df$Gene_ID[which(plot_df$value < 0.5)] <- NA
+
+plot2 <- ggplot(data = plot_df, aes(x = value, y = Locus, color = Hypothesis, label = Gene_ID)) + geom_point(size = 0.6) + theme_light() +
+                facet_grid(Chrom ~ . , scales = "free_y", space = "free") + scale_color_manual(values = c("PP.H3" = 'indianred4','PP.H4' = 'deepskyblue4')) + 
+                labs(title = "Colocalization Results All Loci, Top H3 Genes Named", 
+                     subtitle = paste(paste0("Endpoint: ", plot_df$FinnGen_Endpoint[1]), paste0("Tissue: ", plot_df$Tissue[1]), 
+                                      paste0("eQTL Dataset: ", plot_df$eQTL_dataset[1]), sep = ", "), x = "p-value", y = "") + 
+                theme(plot.title = element_text(size = 12), plot.subtitle = element_text(size = 9), axis.text = element_text(size = 7)) + 
+                geom_text(size=3, check_overlap = TRUE, hjust = 0, nudge_x = 0.005) + scale_x_reverse()
 
 
+# Genes with PP3 or PP4 > 0.8, top 3 genes with highest PP3 named  
+plot_df_top_08 <- full_join(top_results_08, top3_H4[c("Locus", "Ensembl_ID", "PP.H4", "Gene_ID_H4")], by = c("Locus", "Ensembl_ID", "PP.H4"))
+plot_df_top_08 <- plot_df_top_08[which(!is.na(plot_df_top_08$FinnGen_Endpoint)),]
+plot_df_top_08$Chrom <- sapply(strsplit(as.character(plot_df_top_08$Locus), "_", fixed = TRUE), function(x) x[1]) # Trims the chrom number out of Locus
+plot_df_top_08$Chrom <- as.numeric(gsub("chr", "", plot_df_top_08$Chrom))
+plot_df_top_08 <- melt(plot_df_top_08[, -c(7:9)], id = c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID_H4", "Gene_ID_top"))
+plot_df_top_08$Gene_ID_H4[which(!is.na(plot_df_top_08$Gene_ID_H4) & plot_df_top_08$variable == "PP.H3")] <- NA
+plot_df_top_08$Gene_ID_top[which(!is.na(plot_df_top_08$Gene_ID_top) & plot_df_top_08$value < 0.8)] <- NA
+names(plot_df_top_08) <- c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID_H4", "Gene_ID_top", "Hypothesis", "value")
+plot_df_top_08$Gene_ID_top[which(plot_df_top_08$value < 0.5)] <- NA
 
+plot3 <- ggplot(data = plot_df_top_08, aes(x = value, y = Locus, color = Hypothesis, label = Gene_ID_top)) + geom_point(size = 0.6) + theme_light() +
+                  facet_grid(Chrom ~ . , scales = "free_y", space = "free") + scale_color_manual(values = c("PP.H3" = 'indianred4','PP.H4' = 'deepskyblue4')) + 
+                  labs(title = "Loci with genes that have PP3 or PP4 > 0.8", 
+                       subtitle = paste(paste0("Endpoint: ", plot_df_top_08$FinnGen_Endpoint[1]), paste0("Tissue: ", plot_df_top_08$Tissue[1]), 
+                                      paste0("eQTL Dataset: ", plot_df_top_08$eQTL_dataset[1]), sep = ", "), x = "p-value", y = "") +
+                  theme(plot.title = element_text(size = 12), plot.subtitle = element_text(size = 9), axis.text = element_text(size = 7)) +
+                  geom_text(size=3, check_overlap = TRUE, hjust = 0, nudge_x = 0.005) + scale_x_reverse()
+   
+
+# Genes with PP3 or PP4 > 0.75, top 3 genes with highest PP3 named  
+plot_df_top_075 <- full_join(top_results_075, top3_H4[c("Locus", "Ensembl_ID", "PP.H4", "Gene_ID_H4")], by = c("Locus", "Ensembl_ID", "PP.H4"))
+plot_df_top_075 <- plot_df_top_075[which(!is.na(plot_df_top_075$FinnGen_Endpoint)),]
+plot_df_top_075$Chrom <- sapply(strsplit(as.character(plot_df_top_075$Locus), "_", fixed = TRUE), function(x) x[1]) # Trims the chrom number out of Locus
+plot_df_top_075$Chrom <- as.numeric(gsub("chr", "", plot_df_top_075$Chrom))
+plot_df_top_075 <- melt(plot_df_top_075[, -c(7:9)], id = c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID_H4", "Gene_ID_top"))
+plot_df_top_075$Gene_ID_H4[which(!is.na(plot_df_top_075$Gene_ID_H4) & plot_df_top_075$variable == "PP.H3")] <- NA
+plot_df_top_075$Gene_ID_top[which(!is.na(plot_df_top_075$Gene_ID_top) & plot_df_top_075$value < 0.75)] <- NA
+names(plot_df_top_075) <- c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID_H4", "Gene_ID_top", "Hypothesis", "value")
+plot_df_top_075$Gene_ID_top[which(plot_df_top_075$value < 0.5)] <- NA
+
+plot4 <- ggplot(data = plot_df_top_075, aes(x = value, y = Locus, color = Hypothesis, label = Gene_ID_top)) + geom_point(size = 0.6) + theme_light() +
+                  facet_grid(Chrom ~ . , scales = "free_y", space = "free") + scale_color_manual(values = c("PP.H3" = 'indianred4','PP.H4' = 'deepskyblue4')) + 
+                  labs(title = "Loci with genes that have PP3 or PP4 > 0.75", 
+                       subtitle = paste(paste0("Endpoint: ", plot_df_top_075$FinnGen_Endpoint[1]), paste0("Tissue: ", plot_df_top_075$Tissue[1]), 
+                                      paste0("eQTL Dataset: ", plot_df_top_075$eQTL_dataset[1]), sep = ", "), x = "p-value", y = "") +
+                  theme(plot.title = element_text(size = 12), plot.subtitle = element_text(size = 9), axis.text = element_text(size = 7)) + 
+                  geom_text(size=3, check_overlap = TRUE, hjust = 0, nudge_x = 0.005) + scale_x_reverse()
+
+
+# Genes with PP3 or PP4 > 0.5, top 3 genes with highest PP3 named  
+plot_df_top_05 <- full_join(top_results_05, top3_H4[c("Locus", "Ensembl_ID", "PP.H4", "Gene_ID_H4")], by = c("Locus", "Ensembl_ID", "PP.H4"))
+plot_df_top_05 <- plot_df_top_05[which(!is.na(plot_df_top_05$FinnGen_Endpoint)),]
+plot_df_top_05$Chrom <- sapply(strsplit(as.character(plot_df_top_05$Locus), "_", fixed = TRUE), function(x) x[1]) # Trims the chrom number out of Locus
+plot_df_top_05$Chrom <- as.numeric(gsub("chr", "", plot_df_top_05$Chrom))
+plot_df_top_05 <- melt(plot_df_top_05[, -c(7:9)], id = c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID_H4", "Gene_ID_top"))
+plot_df_top_05$Gene_ID_H4[which(!is.na(plot_df_top_05$Gene_ID_H4) & plot_df_top_05$variable == "PP.H3")] <- NA
+plot_df_top_05$Gene_ID_top[which(!is.na(plot_df_top_05$Gene_ID_top) & plot_df_top_05$value < 0.5)] <- NA
+names(plot_df_top_05) <- c("Locus", "Chrom", "FinnGen_Endpoint", "eQTL_dataset", "Ensembl_ID", "Tissue", "nsnps", "Gene_ID_H4", "Gene_ID_top", "Hypothesis", "value")
+plot_df_top_05$Gene_ID_top[which(plot_df_top_05$value < 0.5)] <- NA
+
+plot5 <- ggplot(data = plot_df_top_05, aes(x = value, y = Locus, color = Hypothesis, label = Gene_ID_top)) + geom_point(size = 0.6) + theme_light() +
+                  facet_grid(Chrom ~ . , scales = "free_y", space = "free") + scale_color_manual(values = c("PP.H3" = 'indianred4','PP.H4' = 'deepskyblue4')) + 
+                  labs(title = "Loci with genes that have PP3 or PP4 > 0.5", 
+                       subtitle = paste(paste0("Endpoint: ", plot_df_top_05$FinnGen_Endpoint[1]), paste0("Tissue: ", plot_df_top_05$Tissue[1]), 
+                                      paste0("eQTL Dataset: ", plot_df_top_05$eQTL_dataset[1]), sep = ", "), x = "p-value", y = "") +
+                  theme(plot.title = element_text(size = 12), plot.subtitle = element_text(size = 9), axis.text = element_text(size = 7)) +
+                  geom_text(size=3, check_overlap = TRUE, hjust = 0, nudge_x = 0.005) + scale_x_reverse()
+```
 
 
 

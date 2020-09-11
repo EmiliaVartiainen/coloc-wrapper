@@ -1,17 +1,20 @@
 
 
-subset_data <- function(eqtl = ftp-url, gwas = file, region = "chr:start-end", out = outdir) {
+#' Title
+#'
+#' @param infile 
+#' @param region 
+#' @param outfile 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' subset_data_file(infile = "/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_I9_VARICVE.gz", region = "1:10565520-10965520", outfile = "/Users/eahvarti/Downloads/delete_me.txt")
 
-    ## if eqtl eQTLCatalogue url
-    
-    ## > import_eQTLCatalogue()
-
-    ## gwas file
-
-    ## harmonize data
-    ## same headers
-
-    header_gwas <- c("varid" = "rsids", "pval" = "pval", "maf" = "maf")
-    header_eqtl <- c("varid" = "rsid", "pval" = "pvalue", "maf" = "maf")
-
+subset_data_file <- function(infile, region, outfile) {
+    cat(outfile, "\n")
+    system(paste("tabix", "-h", infile, region, ">", outfile)) # reads the file and filters to the region, system() function input is command line command 
 }
+
+
