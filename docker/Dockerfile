@@ -10,6 +10,11 @@ RUN apt-get update --fix-missing && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+## tabix
+RUN curl -LO https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9.tar.bz2 && \
+    tar -xvjf htslib-1.9.tar.bz2 && cd htslib-1.9 && \
+    ./configure && make && make install && cd .. && rm -rf htslib-1.9*
+
 
 # R 3.6
 RUN wget https://cloud.r-project.org/src/base/R-3/R-3.6.1.tar.gz -P ~ && \
