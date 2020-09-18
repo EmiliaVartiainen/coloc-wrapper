@@ -4,7 +4,7 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 RUN apt-get update --fix-missing && \
     apt-get install -y wget make zlib1g-dev \
-    gcc gfortran bzip2 \
+    gcc gfortran bzip2 curl \
     libpcre3-dev libbz2-dev liblzma-dev libcurl4-openssl-dev g++ cmake \
     libmariadb-client-lgpl-dev libmysqlclient-dev && \
     apt-get clean && \
