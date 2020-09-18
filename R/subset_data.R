@@ -1,14 +1,7 @@
 
-
-#' Title
-#'
-#' @param infile 
-#' @param region 
-#' @param outfile 
-#'
-#' @return
-#' @export
-#'
+#' @param infile input file path, ftp or local
+#' @param region chromosomal region of interest, "chr:start-end"
+#' @param outfile output file path
 #' @examples
 #' subset_data_file(infile = "/Users/eahvarti/Documents/coloc_analysis/Data/finngen_R5_I9_VARICVE.gz", region = "1:10565520-10965520", outfile = "/Users/eahvarti/Downloads/delete_me.txt")
 #' subset_data_file(infile = "/data/output/tmp/finngen_R5_O15_ICP.gz", region = "1:10565520-10965520", outfile = "/data/output/delete_me.txt")
@@ -30,5 +23,3 @@ subset_data_file <- function(infile, region, outfile, header = NULL) {
     }
 
 }
-
-
