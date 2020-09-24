@@ -26,6 +26,4 @@ subset_data_file <- function(infile, region, outfile) {
     }
 
     ## check if header exists in output or not
-
-
 }
