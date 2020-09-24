@@ -68,13 +68,15 @@ run_coloc <- function(eqtl_data, gwas_data, out) {
     
     ## run locuscompare -------------
     #pdf(paste0(out, ".pdf"))
+    ## only use basename
     #locuscomparer::locuscompare(
-    #    in_fn1 = dir_gwas, in_fn2 = dir_eqtl, 
+    #    in_fn1 = gwas_data, in_fn2 = eqtl_data, 
     #    title1 = "GWAS", title2 = "eQTL", 
-    #    marker_col1 = header_gwas["varid"], pval_col1 = header_gwas["pval"], 
-    #    marker_col2 = header_eqtl["varid"], pval_col2 = header_eqtl["pval"], 
-    #    genome = "hg38", snp = "rs11121615")
+    #    marker_col1 = "rsids", pval_col1 = "pval", 
+    #    marker_col2 = "rsid", pval_col2 = "pvalue", 
+    #    genome = "hg38") # , snp = "rs11121615"
     #dev.off()
+
 }
 
 run_coloc(eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000142655_ENSG00000130940.all.tsv", gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", out = "test1.txt")
