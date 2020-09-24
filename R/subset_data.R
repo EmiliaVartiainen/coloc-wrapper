@@ -18,10 +18,10 @@ subset_data_file <- function(infile, region, outfile) {
 
         system(paste("tabix", infile, region, ">", paste0(outfile))) # reads the file and filters to the region, system() function input is command line command 
 
-        system(paste(
-            "echo -e ", header, "> ", paste0(outfile, "_tmp"), 
-            " && cat", outfile, " >> ", paste0(outfile, "_tmp && rm "), paste0(outfile, "_tmp")
-            ))
+        system(paste(paste0("echo '", header, "'> "), outfile, " && cat", paste0(outfile, "_tmp"), " >> ", outfile))
+        
+        system(paste("rm", paste0(outfile, "_tmp")))
+
 
     } else {
 
