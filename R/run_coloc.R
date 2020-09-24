@@ -2,12 +2,15 @@
 ## todo
 ## - with varids, instead of rsids
 
-run_coloc <- function(eqtl_data, gwas_data, out) {
+run_coloc(eqtl_data = "/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
+        gwas_data = "/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
+        out = "/COLOC/extdata/file.txt")
+
+
+run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5) {
     n_gwas <- 11006	+ 117692
     n_eqtl <- 491
-    DIR <- "/COLOC/extdata/"
-    dir_eqtl <- paste0(DIR, "Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv" )
-    dir_gwas <- paste0(DIR, "I9_VARICVE_chr1.tsv" )
+
     header_gwas <- c("varid" = "rsids", "pval" = "pval", "maf" = "maf", "beta"= "beta", "se"= "sebeta")
     header_eqtl <- c("varid" = "rsid", "pval" = "pvalue", "maf" = "maf", "beta" = "beta", "gene_id" = "gene_id")
 
@@ -58,7 +61,8 @@ run_coloc <- function(eqtl_data, gwas_data, out) {
                         N = n_eqtl)
                     
                     ## run coloc.abf() --------------------------
-                    res <- coloc::coloc.abf(dataset1=dataset_gwas, dataset2=dataset_eqtl, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5)
+                    res <- coloc::coloc.abf(dataset1=dataset_gwas, dataset2=dataset_eqtl, 
+                                            p1 = p1, p2 = p2, p12 = p12)
                     return (data.frame(gene = x, t(res$summary)))
     })
 
