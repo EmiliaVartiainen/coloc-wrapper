@@ -14,9 +14,13 @@ subset_data_file <- function(infile, region, outfile) {
     header <- try(system(paste("tabix ", infile, region, " -H"), intern = TRUE))
 
     if (length(header) == 0) {
-        header <- system(paste("curl -s ", infile, "| zcat | head -n 1"), intern = TRUE)
+        header <- try(system(paste("curl -s ", infile, "| zcat | head -n 1"), intern = TRUE), silent = TRUE)
+        
+        if (length(header) == 0) {
+            header <- system(paste("zcat ", infile, "| head -n 1"), intern = TRUE)
+        }
 
-        system(paste("tabix", infile, region, ">", paste0(outfile))) # reads the file and filters to the region, system() function input is command line command 
+        system(paste("tabix", infile, region, ">", paste0(outfile, "_tmp"))) # reads the file and filters to the region, system() function input is command line command 
 
         system(paste(paste0("echo '", header, "'> "), outfile, " && cat", paste0(outfile, "_tmp"), " >> ", outfile))
         
