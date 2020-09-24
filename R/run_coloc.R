@@ -2,9 +2,8 @@
 ## todo
 ## - with varids, instead of rsids
 
-run_coloc(eqtl_data = "/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
-        gwas_data = "/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
-        out = "/COLOC/extdata/file.txt")
+## run_coloc(eqtl_data = "/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", gwas_data = "/COLOC/extdata/I9_VARICVE_chr1.tsv.gz",  out = "/COLOC/extdata/file.txt")
+## run_coloc(eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000142655_ENSG00000130940.all.tsv", gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", out = "test1.txt")
 
 
 run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5) {
@@ -83,4 +82,3 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
 
 }
 
-run_coloc(eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000142655_ENSG00000130940.all.tsv", gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", out = "test1.txt")
