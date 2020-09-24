@@ -32,5 +32,4 @@ subset_data_file <- function(infile, region, outfile) {
 
     }
 
-
 }
