@@ -1,6 +1,6 @@
 
 #' @param infile input file path, ftp or local
-#' @param region chromosomal region of interest, "chr:start-end"
+#' @param region chromosomal region of interest, string in format "chr:start-end"
 #' @param outfile output file path
 #' @examples
 #' subset_data_file(infile = "/COLOC/extdata/I9_VARICVE_chr1.tsv.gz", region = "1:10565520-10965520", outfile = "delete_me_gwas.txt")
