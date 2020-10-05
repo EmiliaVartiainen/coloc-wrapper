@@ -70,8 +70,7 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     data.table::fwrite(df, file = out, sep = "\t")
     
     ## run locuscompare -------------
-    #pdf(paste0(out, ".pdf"))
-    ## only use basename
+    #pdf(paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".pdf")) # trims the outfile.txt -> outfile
     #locuscomparer::locuscompare(
     #    in_fn1 = gwas_data, in_fn2 = eqtl_data, 
     #    title1 = "GWAS", title2 = "eQTL", 
