@@ -1,11 +1,20 @@
 
 ## todo
 ## - with varids, instead of rsids
+## - z/maf vs beta/se
+## - headers
 
-## run_coloc(eqtl_data = "/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", gwas_data = "/COLOC/extdata/I9_VARICVE_chr1.tsv.gz",  out = "/COLOC/extdata/file.txt")
+#' @param eqtl_data input file path, ftp or local
+#' @param gwas_data chromosomal region of interest, string in format "chr:start-end"
+#' @param out if return_object = FALSE, give filename
+#' @param p1 see COLOC tool https://github.com/chr1swallace/coloc
+#' @param p2 see COLOC tool https://github.com/chr1swallace/coloc
+#' @param p12 see COLOC tool https://github.com/chr1swallace/coloc
+#' @param return_object logical, to return object, or write out file
+#' @examples
+#' run_coloc(eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", return_object = TRUE)
 
-
-run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5) {
+run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, return_object = FALSE) {
     n_gwas <- 11006	+ 117692
     n_eqtl <- 491
 
@@ -65,8 +74,12 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     })
 
     df <- do.call("rbind", my.res)
-    print(df)
-    data.table::fwrite(df, file = out, sep = "\t")
+
+    if (return_object) {
+        return(df)
+    } else {
+        data.table::fwrite(df, file = out, sep = "\t")
+    }
     
     ## run locuscompare -------------
     #pdf(paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".pdf")) # trims the outfile.txt -> outfile

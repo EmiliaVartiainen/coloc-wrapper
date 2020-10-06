@@ -3,7 +3,7 @@
 #' @param region chromosomal region of interest, string in format "chr:start-end"
 #' @param outfile output file path
 #' @examples
-#' subset_data_file(infile = "/COLOC/extdata/I9_VARICVE_chr1.tsv.gz", region = "1:10565520-10965520", outfile = "delete_me_gwas.txt")
+#' subset_data_file(infile = "extdata/I9_VARICVE_chr1.tsv.gz", region = "1:10565520-10965520", outfile = "delete_me_gwas.txt")
 #' subset_data_file(infile = "ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/Alasoo_2018/ge/Alasoo_2018_ge_macrophage_IFNg.all.tsv.gz", region = "1:10565520-10965520", outfile = "delete_me_eqtl.txt")
 
 subset_data_file <- function(infile, region, outfile) {

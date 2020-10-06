@@ -23,21 +23,20 @@ gsutil cat gs://finngen-production-library-green/R3/summary_stats/R3_pheno_n.txt
 
 Sample size eqtl, see https://www.ebi.ac.uk/eqtl/Datasets/
 
-## Unit tests
-
-`testthat::test_dir("tests/")`
 
 ## Docker
 
 ```
 sudo docker build -t coloc-wrapper -f docker/Dockerfile .
 
-sudo docker run -it \
--v /mnt/disks/1/projects/COLOC:/COLOC \
--v /mnt/disks/1/data:/data \
-coloc-wrapper /bin/bash
+sudo docker run -it -v /mnt/disks/1/projects/COLOC:/COLOC -w /COLOC coloc-wrapper /bin/bash
 
 ```
+
+## Unit tests
+
+`Rscript -e 'testthat::test_dir("tests/")'`
+
 
 ## References
 
