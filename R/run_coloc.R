@@ -43,9 +43,8 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     df <- dplyr::inner_join(df_gwas, df_eqtl, by = c("rsids" = "rsid"))
     #print(head(df))
     
+    ## loop over genes -----------------
     genes <- unique(df$gene_id)
-    
-    
     my.res <- lapply(genes, function(x) {
                     df_sub <- df[which(df$gene_id == x),]
                     
@@ -73,8 +72,10 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
                     return (data.frame(gene = x, t(res$summary)))
     })
 
+    ## combine results ------------------
     df <- do.call("rbind", my.res)
 
+    ## return results --------------------
     if (return_object) {
         return(df)
     } else {
