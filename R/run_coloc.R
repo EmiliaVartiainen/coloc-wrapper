@@ -19,6 +19,8 @@
 #' @param gwas_info list containing type, N and depending on type sdY (if type = quant) or s (if type = cc).
 #' @param gwas_header vector containing headers of gwas_data, either c(varid, pvalues, MAF) or c(varid, beta, sebeta, maf).
 #' @param eqtl_header vector containing headers of eqtl_data, either c(varid, gene_id, pvalues, MAF) or c(varid, gene_id, beta, sebeta, maf).
+#' @param locuscompare logical, to plot http://locuscompare.com/  plot, out needs to be set
+#' @param locuscompare_info list containing rsid_gwas, pval_gwas and rsid_eqtl, pval_eqtl
 #' @details for input data and parameters see https://chr1swallace.github.io/coloc/
 #' varid can be any variant identifier, but format needs to match between datasets. 
 #' @examples
@@ -28,7 +30,8 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     return_object = FALSE, return_file = TRUE, eqtl_info = list(type = "quant", sdY = 1, N = NA), 
     gwas_info = list(type = "cc", s = NA, N = NA), 
     gwas_header = c(varid = "rsid", pvalues = "pval", MAF = "maf"),
-    eqtl_header = c(varid = "rsid", pvalues = "pval", MAF = "maf", gene_id = "gene_id")
+    eqtl_header = c(varid = "rsid", pvalues = "pval", MAF = "maf", gene_id = "gene_id"),
+    locuscompare = FALSE, locuscompare_info = NULL
     ) {
 
     ## check if beta/se or pval/maf --------------------
@@ -105,23 +108,36 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     ## combine results ------------------
     df <- do.call("rbind", my.res)
 
-    ## return results --------------------
-    if (return_object) {
-        return(df)
+    
+    ## run locuscompare -------------
+    if (locuscompare) {
+        if ("pvalues" %in% names(eqtl_header) & "pvalues" %in% names(gwas_header)){
+            filename <- paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".pdf")
+            print(filename)
+            pdf(filename) # trims the outfile.txt -> outfile
+            locuscomparer::locuscompare(
+                in_fn1 = gwas_data, in_fn2 = eqtl_data, 
+                title1 = "GWAS", title2 = "eQTL", 
+                marker_col1 = locuscompare_info$rsid_gwas, pval_col1 = locuscompare_info$pval_gwas, 
+                marker_col2 = locuscompare_info$rsid_eqtl, pval_col2 = locuscompare_info$pval_eqtl, 
+                genome = "hg38") # , snp = "rs11121615"
+            dev.off()
+        } else {
+            message("pvalues are not passed on")  
+        }
+
     }
+
+
+    ## return results --------------------
+
     if (return_file) {
         data.table::fwrite(df, file = out, sep = "\t")
     }
     
-    ## run locuscompare -------------
-    #pdf(paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".pdf")) # trims the outfile.txt -> outfile
-    #locuscomparer::locuscompare(
-    #    in_fn1 = gwas_data, in_fn2 = eqtl_data, 
-    #    title1 = "GWAS", title2 = "eQTL", 
-    #    marker_col1 = "rsids", pval_col1 = "pval", 
-    #    marker_col2 = "rsid", pval_col2 = "pvalue", 
-    #    genome = "hg38") # , snp = "rs11121615"
-    #dev.off()
+    if (return_object) {
+        return(df)
+    }
 
 }
 
