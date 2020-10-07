@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-req_packages <- c("BiocManager", "devtools", "coloc","optparse","data.table","R.utils")
+req_packages <- c("BiocManager", "devtools", "dplyr", "coloc","optparse","data.table","R.utils", "testthat")
 for (pack in req_packages) {
     if(pack != "data.table" & !require(pack, character.only = TRUE)) {
         install.packages(pack, repos = "http://cran.us.r-project.org")
