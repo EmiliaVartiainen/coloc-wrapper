@@ -24,10 +24,6 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     #header_gwas <- c("varid" = "rsids", "pval" = "pval", "maf" = "maf")
     #header_eqtl <- c("varid" = "rsid", "pval" = "pvalue", "maf" = "maf")
 
-    ## outname -------------------
-    #bits <- sapply(c(gwas_data, eqtl_data), function(x) unlist(strsplit(basename(x), "\\."))[1])
-    #outname <- paste0(opt$out, paste(bits, collapse = "-"))
-
     ## read data -----------------
 
     df_eqtl <- data.table::fread(file = eqtl_data) #select = unname(header_eqtl))

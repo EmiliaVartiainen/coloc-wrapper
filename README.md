@@ -35,7 +35,7 @@ sudo docker run -it -v /mnt/disks/1/projects/COLOC:/COLOC -w /COLOC coloc-wrappe
 
 ## Unit tests
 
-`Rscript -e 'testthat::test_dir("tests/")'`
+`Rscript -e 'testthat::test_dir("test/testthat/")'`
 
 
 ## References
