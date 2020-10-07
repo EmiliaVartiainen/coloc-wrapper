@@ -1,9 +1,10 @@
 
-## todo
+## todos
+## - tests for beta/sebeta
 ## - warnings
-## - error out if header incomplete
+##      - error out if header incomplete
 ## - finetune parameters
-## - coloc.abf correct?
+## - function coloc.abf correct?
 ## - locuszoomplot
 
 #' @param eqtl_data input file path, ftp or local
