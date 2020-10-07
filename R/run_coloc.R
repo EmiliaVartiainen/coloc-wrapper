@@ -10,13 +10,18 @@
 #' @param p1 see COLOC tool https://github.com/chr1swallace/coloc
 #' @param p2 see COLOC tool https://github.com/chr1swallace/coloc
 #' @param p12 see COLOC tool https://github.com/chr1swallace/coloc
-#' @param return_object logical, to return object, or write out file
+#' @param return_object logical, return object
+#' @param return_file logical, write out file
+#' @param eqtl_info list containing type, N and depending on type sdY or s.
+#' @param gwas_info list containing type, N and depending on type sdY (if type = quant) or s (if type = cc).
+
+#' @details for input data and parameters see https://chr1swallace.github.io/coloc/
 #' @examples
 #' run_coloc(eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", return_object = TRUE)
 
 run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, 
-    return_object = FALSE, return_file = TRUE, info_eqtl = list(type = "quant", sdY = 1, N = 491), 
-    info_gwas = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692)
+    return_object = FALSE, return_file = TRUE, eqtl_info = list(type = "quant", sdY = 1, N = 491), 
+    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692)
     ) {
     
 
@@ -47,12 +52,12 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
                     df_sub <- df[which(df$gene_id == x),]
                     
                     ## create data lists ------------
-                    dataset_gwas <- info_gwas
+                    dataset_gwas <- gwas_info
                     dataset_gwas$pvalues <- df_sub$pval
                     dataset_gwas$MAF <- df_sub$maf.x
                     dataset_gwas$snp <- df_sub$rsids
                     
-                    dataset_eqtl <- info_eqtl
+                    dataset_eqtl <- eqtl_info
                     dataset_eqtl$pvalues <- df_sub$pvalue
                     dataset_eqtl$MAF <- df_sub$maf.y
                     dataset_eqtl$snp <- df_sub$rsid
