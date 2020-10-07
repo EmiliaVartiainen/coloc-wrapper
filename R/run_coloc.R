@@ -14,9 +14,11 @@
 #' @examples
 #' run_coloc(eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", return_object = TRUE)
 
-run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, return_object = FALSE) {
-    n_gwas <- 11006	+ 117692
-    n_eqtl <- 491
+run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, 
+    return_object = FALSE, return_file = TRUE, info_eqtl = list(type = "quant", sdY = 1, N = 491), 
+    info_gwas = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692)
+    ) {
+    
 
     header_gwas <- c("varid" = "rsids", "pval" = "pval", "maf" = "maf", "beta"= "beta", "se"= "sebeta")
     header_eqtl <- c("varid" = "rsid", "pval" = "pvalue", "maf" = "maf", "beta" = "beta", "gene_id" = "gene_id")
@@ -45,22 +47,15 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
                     df_sub <- df[which(df$gene_id == x),]
                     
                     ## create data lists ------------
-                    dataset_gwas <- list(
-                        pvalues = df_sub$pval, 
-                        MAF = df_sub$maf.x,
-                        type = "cc", 
-                        s = 11006/117692, 
-                        #  sdY = 1,
-                        snp = df_sub$rsids,
-                        N = n_gwas)
+                    dataset_gwas <- info_gwas
+                    dataset_gwas$pvalues <- df_sub$pval
+                    dataset_gwas$MAF <- df_sub$maf.x
+                    dataset_gwas$snp <- df_sub$rsids
                     
-                    dataset_eqtl <- list(
-                        pvalues = df_sub$pvalue, 
-                        MAF = df_sub$maf.y,
-                        type = "quant", 
-                        sdY = 1,
-                        snp = df_sub$rsid,
-                        N = n_eqtl)
+                    dataset_eqtl <- info_eqtl
+                    dataset_eqtl$pvalues <- df_sub$pvalue
+                    dataset_eqtl$MAF <- df_sub$maf.y
+                    dataset_eqtl$snp <- df_sub$rsid
                     
                     ## run coloc.abf() --------------------------
                     res <- coloc::coloc.abf(dataset1=dataset_gwas, dataset2=dataset_eqtl, 
@@ -74,7 +69,8 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     ## return results --------------------
     if (return_object) {
         return(df)
-    } else {
+    }
+    if (return_file) {
         data.table::fwrite(df, file = out, sep = "\t")
     }
     
