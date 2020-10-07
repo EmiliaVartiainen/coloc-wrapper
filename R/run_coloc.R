@@ -1,8 +1,10 @@
 
 ## todo
 ## - warnings
+## - error out if header incomplete
+## - finetune parameters
+## - coloc.abf correct?
 ## - locuszoomplot
-## - tests for header
 
 #' @param eqtl_data input file path, ftp or local
 #' @param gwas_data chromosomal region of interest, string in format "chr:start-end"
