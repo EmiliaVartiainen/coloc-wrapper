@@ -26,6 +26,9 @@ Running the pipeline involves two steps:
 2. Running coloc.
 
 ### 1. Trimming data
+
+Pass on a `file` (url or path), specify a `region` in tabix fashion and give a `out` filename. 
+
 ```
 Rscript extdata/step1_subset_data.R	\
 	--file=ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/Lepik_2017/ge/Lepik_2017_ge_blood.all.tsv.gz \
@@ -34,6 +37,12 @@ Rscript extdata/step1_subset_data.R	\
 ```
 
 ### 2. Run coloc
+
+- `eqtl` and `gwas` point to datasets for a specific region in which colocalization is performed. The GWAS dataset should only contain one phenotype. The eQTL dataset can contain multiple genes. Colocalization is perform for each gene. 
+- `header_eqtl` and `header_eqtl` contain the column names. `varid` can be any var
+- `` and ``
+- `p1`, `p2` and `p12` priors that need to be specified. 
+- `info_locuscompare`
 
 ```
 Rscript extdata/step2_run_coloc.R	\
