@@ -2,10 +2,22 @@
 
 This pipeline facilitates easy usage of `coloc` (Giambartolomei et al. 2014, Wallace 2020) with GWAS and eQTL data. 
 
-## Pitfalls
+## Pitfalls and things to consider
 
 1. Locuscompare population. 
+Default set to EUR
 
+For more options see https://github.com/boxiangliu/locuscomparer. 
+
+2. Population sample difference between eqtl and gwas datasets. 
+
+See Wallace 2020. 
+
+3. Choice of parameters
+
+p1, p2, p12
+
+See Wallace 2020. 
 
 ## Usage
 
@@ -13,16 +25,31 @@ Running the pipeline involves two steps:
 1. Trimming data according to predefined regions
 2. Running coloc.
 
+### 1. Trimming data
 ```
 Rscript extdata/step1_subset_data.R	\
 	--file=ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/Lepik_2017/ge/Lepik_2017_ge_blood.all.tsv.gz \
 	--region="1:10565520-10965520" \
     --out=tmp.txt
+```
 
+### 2. Run coloc
+
+```
 Rscript extdata/step2_run_coloc.R	\
-	--eqtl=/COLOC/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv \
-	--gwas=/COLOC/extdata/I9_VARICVE_chr1.tsv \
-    --out=/outdir/
+	--eqtl="extdata/Lepik_2017_ge_blood_chr1_ENSG00000142655_ENSG00000130940.all.tsv" \
+	--gwas="extdata/I9_VARICVE_chr1.tsv.gz" \
+	--out="tmp.txt" \
+	--header_eqtl="c(varid = 'rsid', pvalues = 'pvalue', MAF = 'maf', gene_id = 'gene_id')" \
+	--header_gwas="c(varid = 'rsids', pvalues = 'pval', MAF = 'maf')" \
+	--info_gwas="list(type = 'cc', s = 11006/117692, N  = 11006 + 117692)" \
+	--info_eqtl="list(type = 'quant', sdY = 1, N = 491)" \
+	--info_locuscompare="list(rsid_eqtl = 'rsid', rsid_gwas = 'rsids', pval_eqtl = 'pvalue', pval_gwas = 'pval', pop = 'EUR')" \
+	--p1=1e-4 \
+	--p2=1e-4 \
+	--p12=1e-5
+
+Rscript extdata/step2_run_coloc.R --help
 
 ```	
 

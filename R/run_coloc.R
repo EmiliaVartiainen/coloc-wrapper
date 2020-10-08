@@ -1,17 +1,19 @@
-suppressMessages(library(data.table))
-suppressMessages(library(locuscomparer))
-suppressMessages(library(coloc))
+library(data.table)
+library(locuscomparer)
+library(coloc)
 
 options(bitmapType='cairo')
 
 
 ## todos
-## - tests for beta/sebeta
+## - tests 
+##      - for beta/sebeta
+##      - for locuscompare
 ## - warnings
 ##      - error out if header incomplete
 ## - finetune parameters
 ## - function coloc.abf correct?
-## - locuszoomplot
+## - locuszoomplot for genes
 
 #' @param eqtl_data input file path, ftp or local
 #' @param gwas_data chromosomal region of interest, string in format "chr:start-end"
@@ -25,8 +27,7 @@ options(bitmapType='cairo')
 #' @param gwas_info list containing type, N and depending on type sdY (if type = quant) or s (if type = cc).
 #' @param gwas_header vector containing headers of gwas_data, either c(varid, pvalues, MAF) or c(varid, beta, sebeta, maf).
 #' @param eqtl_header vector containing headers of eqtl_data, either c(varid, gene_id, pvalues, MAF) or c(varid, gene_id, beta, sebeta, maf).
-#' @param locuscompare logical, to plot http://locuscompare.com/  plot, out needs to be set
-#' @param locuscompare_info list containing rsid_gwas, pval_gwas and rsid_eqtl, pval_eqtl
+#' @param locuscompare_info NULL by default, otherwise list containing rsid_gwas, pval_gwas and rsid_eqtl, pval_eqtl
 #' @details for input data and parameters see https://chr1swallace.github.io/coloc/
 #' varid can be any variant identifier, but format needs to match between datasets. 
 #' @examples
@@ -39,22 +40,19 @@ options(bitmapType='cairo')
 #'    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692), 
 #'    gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"), #, beta = "beta", se = "sebeta"),
 #'    eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), 
-#'    locuscompare = TRUE, locuscompare_info = list(rsid_eqtl = "rsid", rsid_gwas = "rsids", pval_eqtl = "pvalue", pval_gwas = "pval")
+#'    locuscompare_info = list(rsid_eqtl = "rsid", rsid_gwas = "rsids", pval_eqtl = "pvalue", pval_gwas = "pval", pop = "EUR")
 #'   )
 
 
-
-
 run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, 
-    return_object = FALSE, return_file = TRUE, eqtl_info = list(type = "quant", sdY = 1, N = NA), 
+    return_object = FALSE, return_file = TRUE, 
+    eqtl_info = list(type = "quant", sdY = 1, N = NA), 
     gwas_info = list(type = "cc", s = NA, N = NA), 
     gwas_header = c(varid = "rsid", pvalues = "pval", MAF = "maf"),
     eqtl_header = c(varid = "rsid", pvalues = "pval", MAF = "maf", gene_id = "gene_id"),
-    locuscompare = FALSE, locuscompare_info = NULL
-    ) {
-
+    locuscompare_info =  NULL  ) {
+    
     ## check if beta/se or pval/maf --------------------
-
 
     ## read data -----------------
 
@@ -65,8 +63,6 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
 
     ## join -------------------------
     df <- dplyr::inner_join(df_gwas, df_eqtl, by = c("varid.gwas" = "varid.eqtl"))
-
-
 
     ## loop over genes -----------------
     genes <- unique(df$gene_id)
@@ -129,18 +125,18 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
 
     
     ## run locuscompare -------------
-    if (locuscompare) {
+    if (!is.null(locuscompare_info)) {
         # trim the outfile.txt -> outfile
         ## todo: needs to run for each gene
         filename <- paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".png")
         png(filename, width = 1000, height = 600)
-        print(filename)
         qp <- locuscompare(
             in_fn1 = gwas_data, in_fn2 = eqtl_data, 
             title1 = "GWAS", title2 = "eQTL", 
             marker_col1 = locuscompare_info$rsid_gwas, pval_col1 = locuscompare_info$pval_gwas, 
             marker_col2 = locuscompare_info$rsid_eqtl, pval_col2 = locuscompare_info$pval_eqtl, 
-            genome = "hg38") # , snp = "rs11121615"
+            genome = "hg38", 
+            population = locuscompare_info$pop) # , snp = "rs11121615"
         print(qp)
         dev.off()
 
