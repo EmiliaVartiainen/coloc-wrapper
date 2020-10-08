@@ -6,8 +6,9 @@ options(bitmapType='cairo')
 
 
 ## todos
-## - tests for beta/sebeta
-## - tests for locuscompare
+## - tests 
+##      - for beta/sebeta
+##      - for locuscompare
 ## - warnings
 ##      - error out if header incomplete
 ## - finetune parameters

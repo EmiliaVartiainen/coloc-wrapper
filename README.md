@@ -8,7 +8,10 @@ This pipeline facilitates easy usage of `coloc` (Giambartolomei et al. 2014, Wal
 Default set to EUR
 
 For more options see https://github.com/boxiangliu/locuscomparer. 
-2. 
+
+2. Population sample difference between eqtl and gwas datasets. 
+
+See Wallace 2020. 
 
 3. Choice of parameters
 
