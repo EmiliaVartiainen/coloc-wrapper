@@ -1,6 +1,3 @@
-## todo
-## - with varids, instead of rsids
-
 source("R/subset_data.R")
 suppressMessages(library(optparse))
 
@@ -13,7 +10,6 @@ option_list <- list(
 opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
 
 subset_data_file(infile = opt$file, region = opt$region, outfile = opt$out)  
-
 
 
 

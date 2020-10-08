@@ -1,3 +1,9 @@
+suppressMessages(library(data.table))
+suppressMessages(library(locuscomparer))
+suppressMessages(library(coloc))
+
+options(bitmapType='cairo')
+
 
 ## todos
 ## - tests for beta/sebeta
@@ -24,7 +30,20 @@
 #' @details for input data and parameters see https://chr1swallace.github.io/coloc/
 #' varid can be any variant identifier, but format needs to match between datasets. 
 #' @examples
-#' run_coloc(eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", return_object = TRUE)
+#' run_coloc(
+#'    eqtl_data = "extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
+#'    gwas_data = "extdata/I9_VARICVE_chr1.tsv.gz", 
+#'    return_object = TRUE, return_file = FALSE,
+#'    out = "tmp.txt", 
+#'    eqtl_info = list(type = "quant", sdY = 1, N = 491), 
+#'    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692), 
+#'    gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"), #, beta = "beta", se = "sebeta"),
+#'    eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), 
+#'    locuscompare = TRUE, locuscompare_info = list(rsid_eqtl = "rsid", rsid_gwas = "rsids", pval_eqtl = "pvalue", pval_gwas = "pval")
+#'   )
+
+
+
 
 run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, 
     return_object = FALSE, return_file = TRUE, eqtl_info = list(type = "quant", sdY = 1, N = NA), 
@@ -112,15 +131,17 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     ## run locuscompare -------------
     if (locuscompare) {
         # trim the outfile.txt -> outfile
-        filename <- paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".pdf")
-
-        pdf(filename) 
-        locuscomparer::locuscompare(
+        ## todo: needs to run for each gene
+        filename <- paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".png")
+        png(filename, width = 1000, height = 600)
+        print(filename)
+        qp <- locuscompare(
             in_fn1 = gwas_data, in_fn2 = eqtl_data, 
             title1 = "GWAS", title2 = "eQTL", 
             marker_col1 = locuscompare_info$rsid_gwas, pval_col1 = locuscompare_info$pval_gwas, 
             marker_col2 = locuscompare_info$rsid_eqtl, pval_col2 = locuscompare_info$pval_eqtl, 
             genome = "hg38") # , snp = "rs11121615"
+        print(qp)
         dev.off()
 
     }

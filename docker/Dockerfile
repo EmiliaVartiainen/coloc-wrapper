@@ -15,6 +15,8 @@ RUN curl -LO https://github.com/samtools/htslib/releases/download/1.9/htslib-1.9
     tar -xvjf htslib-1.9.tar.bz2 && cd htslib-1.9 && \
     ./configure && make && make install && cd .. && rm -rf htslib-1.9*
 
+RUN apt-get update -y  && apt-get install -y libcairo2-dev  && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # R 3.6
 RUN wget https://cloud.r-project.org/src/base/R-3/R-3.6.1.tar.gz -P ~ && \
@@ -26,5 +28,6 @@ RUN wget https://cloud.r-project.org/src/base/R-3/R-3.6.1.tar.gz -P ~ && \
 # R PACKAGES
 ADD ./docker/install_packages.R /usr/local/bin/
 RUN chmod a+x /usr/local/bin/install_packages.R && install_packages.R
+
 
 ## ADD R/qqplot.R /usr/local/bin/
