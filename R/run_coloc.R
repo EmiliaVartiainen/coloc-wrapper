@@ -13,7 +13,7 @@ options(bitmapType='cairo')
 ##      - error out if header incomplete
 ## - finetune parameters
 ## - function coloc.abf correct?
-## - locuszoomplot for genes
+## - locuscompare for each genes
 
 #' @param eqtl_data input file path, ftp or local
 #' @param gwas_data chromosomal region of interest, string in format "chr:start-end"
