@@ -121,36 +121,49 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     })
 
     ## combine results ------------------
-    df <- do.call("rbind", my.res)
+    results <- do.call("rbind", my.res)
 
     
     ## run locuscompare -------------
     if (!is.null(locuscompare_info)) {
         # trim the outfile.txt -> outfile
         ## todo: needs to run for each gene
+        ## plot all genes or only the ones that are colocalizing?
+        
         filename <- paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".png")
         png(filename, width = 1000, height = 600)
-        qp <- locuscompare(
-            in_fn1 = gwas_data, in_fn2 = eqtl_data, 
-            title1 = "GWAS", title2 = "eQTL", 
-            marker_col1 = locuscompare_info$rsid_gwas, pval_col1 = locuscompare_info$pval_gwas, 
-            marker_col2 = locuscompare_info$rsid_eqtl, pval_col2 = locuscompare_info$pval_eqtl, 
-            genome = "hg38", 
-            population = locuscompare_info$pop) # , snp = "rs11121615"
-        print(qp)
+        
+        plot <- lapply(genes, function(x) {
+            df_sub <- df[which(df$gene_id == x),]
+            
+            
+            if (max(-log10(df_sub$pval.gwas)) > max(-log10(df_sub$pvalues.eqtl))) { # ratio for the plot coordinates 
+                ratio <- (max(-log10(df_sub$pvalues.eqtl))) / (max(-log10(df_sub$pvalues.gwas)))
+            }
+            else {
+                ratio <- (max(-log10(df_sub$pvalues.gwas))) / (max(-log10(df_sub$pvalues.eqtl)))
+            }
+            
+            plot <- ggplot(data = df_sub, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "grey", linetype = 3) + 
+                            geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
+                            labs(title = x, x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
+                            theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
+            return(plot)
+        })
+        
+        print(plot)
         dev.off()
-
     }
 
 
     ## return results --------------------
 
     if (return_file) {
-        data.table::fwrite(df, file = out, sep = "\t")
+        data.table::fwrite(results, file = out, sep = "\t")
     }
     
     if (return_object) {
-        return(df)
+        return(results)
     }
 
 }
