@@ -144,10 +144,11 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
                 ratio <- (max(-log10(df_sub$pvalues.gwas))) / (max(-log10(df_sub$pvalues.eqtl)))
             }
             
-            plot <- ggplot(data = df_sub, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "grey", linetype = 3) + 
-                            geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
-                            labs(title = x, x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
-                            theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
+            plot <- ggplot2::ggplot(data = df_sub, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "grey", linetype = 3) + 
+                geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
+                labs(title = x, x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
+                theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
+            
             return(plot)
         })
         
