@@ -1,8 +1,60 @@
 library(data.table)
-library(locuscomparer)
+library(ggplot2)
 library(coloc)
 
 options(bitmapType='cairo')
+
+# to test locuscompare, remove this 
+
+run_coloc(eqtl_data = "/Users/eahvarti/Documents/R_studio/Coloc_analysis/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
+          gwas_data = "/Users/eahvarti/Documents/R_studio/Coloc_analysis/extdata/I9_VARICVE_chr1.tsv.gz", 
+          return_object = TRUE, return_file = FALSE, out = "coloc_test.txt", 
+          eqtl_info = list(type = "quant", sdY = 1, N = 491), 
+          gwas_info = list(type = "cc", s = 11006/117692, N  = 11006+117692), 
+          gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf",  beta = "beta", se = "sebeta"), 
+          eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_plot = "all")
+
+
+#' plots the locus and saves it in a file
+#' @param df a data frame of one gene, contains both GWAS and eQTL data for it 
+#' @param gene the name of the gene
+#' @param locuscompare_plot all, significant or none
+#' @param filename the name of the output file 
+
+locuscompare <- function(df, gene, locuscompare_plot, res, filename) {
+    filename <- sapply(strsplit(filename, ".", fixed = TRUE), function(x) x[1])
+    
+    if (max(-log10(df$pvalues.gwas)) < max(-log10(df$pvalues.eqtl))) { # ratio for the plot coordinates 
+        ratio <- (max(-log10(df$pvalues.eqtl))) / (max(-log10(df$pvalues.gwas)))
+    }
+    else {
+        ratio <- (max(-log10(df$pvalues.gwas))) / (max(-log10(df$pvalues.eqtl)))
+    }
+    
+    if (locuscompare_plot == "all") {
+        plot <- ggplot2::ggplot(data = df, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "black", linetype = 3) + 
+            geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
+            labs(title = paste0(filename, " - ", gene), x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
+            theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
+        
+        ggplot2::ggsave(filename = paste0(filename, "_locuscompare_", gene, ".png"), plot = plot, width = 15, height = 15, units = "cm")
+        
+        return(plot)
+    } 
+    
+    if (locuscompare_plot == "significant") {
+        if (res$PP.H4 > 0.8) { # check if the gene is significant 
+            plot <- ggplot2::ggplot(data = df, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "black", linetype = 3) + 
+                geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
+                labs(title = paste0(filename, " - ", gene), x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
+                theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
+            
+            ggplot2::ggsave(filename = paste0(filename, "_locuscompare_", gene, ".png"), plot = plot, width = 15, height = 15, units = "cm")
+            
+            return(plot)
+        }
+    } 
+}
 
 
 ## todos
@@ -27,7 +79,7 @@ options(bitmapType='cairo')
 #' @param gwas_info list containing type, N and depending on type sdY (if type = quant) or s (if type = cc).
 #' @param gwas_header vector containing headers of gwas_data, either c(varid, pvalues, MAF) or c(varid, beta, sebeta, maf).
 #' @param eqtl_header vector containing headers of eqtl_data, either c(varid, gene_id, pvalues, MAF) or c(varid, gene_id, beta, sebeta, maf).
-#' @param locuscompare_info NULL by default, otherwise list containing rsid_gwas, pval_gwas and rsid_eqtl, pval_eqtl
+#' @param locuscompare_plot all, significant or none depenging on which genes to plot.
 #' @details for input data and parameters see https://chr1swallace.github.io/coloc/
 #' varid can be any variant identifier, but format needs to match between datasets. 
 #' @examples
@@ -40,7 +92,7 @@ options(bitmapType='cairo')
 #'    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692), 
 #'    gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"), #, beta = "beta", se = "sebeta"),
 #'    eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), 
-#'    locuscompare_info = list(rsid_eqtl = "rsid", rsid_gwas = "rsids", pval_eqtl = "pvalue", pval_gwas = "pval", pop = "EUR")
+#'    locuscompare_plot = "all",
 #'   )
 
 
@@ -48,9 +100,9 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     return_object = FALSE, return_file = TRUE, 
     eqtl_info = list(type = "quant", sdY = 1, N = NA), 
     gwas_info = list(type = "cc", s = NA, N = NA), 
-    gwas_header = c(varid = "rsid", pvalues = "pval", MAF = "maf"),
-    eqtl_header = c(varid = "rsid", pvalues = "pval", MAF = "maf", gene_id = "gene_id"),
-    locuscompare_info =  NULL  ) {
+    gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"),
+    eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"),
+    locuscompare_plot =  NULL) {
     
     ## check if beta/se or pval/maf --------------------
 
@@ -112,53 +164,26 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
                         dataset_eqtl$varbeta <- df_sub$sebeta.eqtl^2
                     }
 
-
+                    #print(head(dataset_eqtl))
+                    print(head(dataset_gwas))
 
                     ## run coloc.abf() --------------------------
                     res <- coloc::coloc.abf(dataset1=dataset_gwas, dataset2=dataset_eqtl, 
                                             p1 = p1, p2 = p2, p12 = p12)
+                    
+                    plot <- locuscompare(df_sub, x, locuscompare_plot, res, out)
+                    print(plot)
+                    
+                    # locuscompare_emilia function that takes the datasets 
+                    # only do it if locuscompare_plot is all or significant and there is PP4 > 0.7 or something 
+                    
                     return (data.frame(gene = x, t(res$summary)))
     })
 
     ## combine results ------------------
     results <- do.call("rbind", my.res)
 
-    
-    ## run locuscompare -------------
-    if (!is.null(locuscompare_info)) {
-        # trim the outfile.txt -> outfile
-        ## todo: needs to run for each gene
-        ## plot all genes or only the ones that are colocalizing?
-        
-        filename <- paste0(sapply(strsplit(out, ".", fixed = TRUE), function(x) x[1]), ".png")
-        png(filename, width = 1000, height = 600)
-        
-        plot <- lapply(genes, function(x) {
-            df_sub <- df[which(df$gene_id == x),]
-            
-            
-            if (max(-log10(df_sub$pval.gwas)) > max(-log10(df_sub$pvalues.eqtl))) { # ratio for the plot coordinates 
-                ratio <- (max(-log10(df_sub$pvalues.eqtl))) / (max(-log10(df_sub$pvalues.gwas)))
-            }
-            else {
-                ratio <- (max(-log10(df_sub$pvalues.gwas))) / (max(-log10(df_sub$pvalues.eqtl)))
-            }
-            
-            plot <- ggplot2::ggplot(data = df_sub, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "grey", linetype = 3) + 
-                geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
-                labs(title = x, x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
-                theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
-            
-            return(plot)
-        })
-        
-        print(plot)
-        dev.off()
-    }
-
-
     ## return results --------------------
-
     if (return_file) {
         data.table::fwrite(results, file = out, sep = "\t")
     }
@@ -166,6 +191,4 @@ run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-
     if (return_object) {
         return(results)
     }
-
 }
-

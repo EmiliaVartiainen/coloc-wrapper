@@ -12,12 +12,11 @@ option_list <- list(
     optparse::make_option(c("--p12"), type="double", default=1e-5, help="the prior probability that any random SNP in the region is associated with both traits"),
     optparse::make_option(c("--header_eqtl"), type="character", default="c(varid = 'rsids', pvalues = 'pval', MAF = 'maf')", help="Header of the eQTL file, named vector in quotes"),
     optparse::make_option(c("--header_gwas"), type="character", default="c(varid = 'rsids', pvalues = 'pval', MAF = 'maf')", help="Header of the GWAS file, named vector in quotes"),
-    optparse::make_option(c("--info_gwas"), type="character", default="list(type = 'cc', s = 11006/117692, N  = 11006 + 117692)", help="options for gwas datalist"),
+    optparse::make_option(c("--info_gwas"), type="character", default="list(type = 'cc', s = 11006/117692, N  = 11006 + 117692)", help="Options for gwas datalist"),
     optparse::make_option(c("--info_eqtl"), type="character", default="list(type = 'quant', sdY = 1, N = 491)", help="Options for eqtl datalist"),    
-    optparse::make_option(c("--info_locuscompare"), type="character", default="list(rsid_eqtl = 'rsid', rsid_gwas = 'rsids', pval_eqtl = 'pvalue', pval_gwas = 'pval', pop = 'EUR')", help="Options locuszoom plot")  
+    optparse::make_option(c("--locuscompare_plot"), type="character", default="significant", help="Which genes to plot")  
 
 )
-
 
 opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
 header_eqtl <- eval(parse(text=opt$header_eqtl))
