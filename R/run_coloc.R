@@ -22,7 +22,15 @@ options(bitmapType='cairo')
 
 locuscompare <- function(df, gene, filename) {
     filename <- sapply(strsplit(filename, ".", fixed = TRUE), function(x) x[1])
-    
+
+    if (!(any(names(df) %in% "pvalues.gwas"))) {
+        stop("GWAS pvalue column is needed for the locuscompare plot, but missing from the data.")
+    }
+
+    if (!(any(names(df) %in% "pvalues.eqtl"))) {
+        stop("eQTL pvalue column is needed for the locuscompare plot, but missing from the data.")
+    }
+
     if (max(-log10(df$pvalues.gwas)) < max(-log10(df$pvalues.eqtl))) { # ratio for the plot coordinates 
         ratio <- (max(-log10(df$pvalues.eqtl))) / (max(-log10(df$pvalues.gwas)))
     }
@@ -61,7 +69,7 @@ locuscompare <- function(df, gene, filename) {
 #' @param gwas_info list containing type, N and depending on type sdY (if type = quant) or s (if type = cc).
 #' @param gwas_header vector containing headers of gwas_data, either c(varid, pvalues, MAF) or c(varid, beta, sebeta, maf).
 #' @param eqtl_header vector containing headers of eqtl_data, either c(varid, gene_id, pvalues, MAF) or c(varid, gene_id, beta, sebeta, maf).
-#' @param locuscompare_plot all, significant or none depenging on which genes to plot.
+#' @param locuscompare_thresh PP4 values between 0 and 1, anything above threshold will be plotted.
 #' @details for input data and parameters see https://chr1swallace.github.io/coloc/
 #' varid can be any variant identifier, but format needs to match between datasets. 
 #' @examples
@@ -78,13 +86,13 @@ locuscompare <- function(df, gene, filename) {
 #'   )
 
 
-run_coloc <- function(eqtl_data, gwas_data, out, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, 
+run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, 
     return_object = FALSE, return_file = TRUE, 
     eqtl_info = list(type = "quant", sdY = 1, N = NA), 
     gwas_info = list(type = "cc", s = NA, N = NA), 
     gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"),
     eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"),
-    locuscompare_threshold =  0) {
+    locuscompare_threshold =  1) {
     
     ## check if beta/se or pval/maf --------------------
 
