@@ -4,21 +4,20 @@ library(coloc)
 
 options(bitmapType='cairo')
 
-# to test locuscompare, remove this 
+# # to test locuscompare, remove this 
 
-run_coloc(eqtl_data = "/Users/eahvarti/Documents/R_studio/Coloc_analysis/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
-          gwas_data = "/Users/eahvarti/Documents/R_studio/Coloc_analysis/extdata/I9_VARICVE_chr1.tsv.gz", 
-          return_object = TRUE, return_file = FALSE, out = "coloc_test.txt", 
-          eqtl_info = list(type = "quant", sdY = 1, N = 491), 
-          gwas_info = list(type = "cc", s = 11006/117692, N  = 11006+117692), 
-          gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf",  beta = "beta", se = "sebeta"), 
-          eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_threshold = 0)
+# run_coloc(eqtl_data = "/Users/eahvarti/Documents/R_studio/Coloc_analysis/extdata/Lepik_2017_ge_blood_chr1_ENSG00000130940.all.tsv", 
+#           gwas_data = "/Users/eahvarti/Documents/R_studio/Coloc_analysis/extdata/I9_VARICVE_chr1.tsv.gz", 
+#           return_object = TRUE, return_file = FALSE, out = "coloc_test.txt", 
+#           eqtl_info = list(type = "quant", sdY = 1, N = 491), 
+#           gwas_info = list(type = "cc", s = 11006/117692, N  = 11006+117692), 
+#           gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf",  beta = "beta", se = "sebeta"), 
+#           eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_threshold = 0)
 
 
 #' plots the locus and saves it in a file
 #' @param df a data frame of one gene, contains both GWAS and eQTL data for it 
 #' @param gene the name of the gene
-#' @param locuscompare_plot all, significant or none
 #' @param filename the name of the output file 
 
 locuscompare <- function(df, gene, filename) {
