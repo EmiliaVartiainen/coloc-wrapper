@@ -82,7 +82,7 @@ locuscompare <- function(df, gene, filename) {
 #'    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692), 
 #'    gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"), #, beta = "beta", se = "sebeta"),
 #'    eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), 
-#'    locuscompare_plot = "all",
+#'    locuscompare_threshold = 0,
 #'   )
 
 
@@ -168,9 +168,7 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
                         locuscompare(df = df_sub, gene = x, filename = out)
                     }
                     
-                    # locuscompare_emilia function that takes the datasets 
-                    # only do it if locuscompare_plot is all or significant and there is PP4 > 0.7 or something 
-                    
+                 
                     return (data.frame(gene = x, res))
     })
 
