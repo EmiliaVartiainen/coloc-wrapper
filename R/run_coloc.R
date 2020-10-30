@@ -12,7 +12,7 @@ options(bitmapType='cairo')
 #           eqtl_info = list(type = "quant", sdY = 1, N = 491), 
 #           gwas_info = list(type = "cc", s = 11006/117692, N  = 11006+117692), 
 #           gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf",  beta = "beta", se = "sebeta"), 
-#           eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_threshold = 0)
+#           eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_thresh = 0)
 
 
 #' plots the locus and saves it in a file
@@ -82,7 +82,7 @@ locuscompare <- function(df, gene, filename) {
 #'    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692), 
 #'    gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"), #, beta = "beta", se = "sebeta"),
 #'    eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), 
-#'    locuscompare_threshold = 0,
+#'    locuscompare_thresh = 0,
 #'   )
 
 
@@ -92,7 +92,7 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
     gwas_info = list(type = "cc", s = NA, N = NA), 
     gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"),
     eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"),
-    locuscompare_threshold =  1) {
+    locuscompare_thresh =  1) {
     
     ## check if beta/se or pval/maf --------------------
 
@@ -103,12 +103,18 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
     df_gwas <- data.table::fread(file = gwas_data, select= unname(gwas_header))
     names(df_gwas) <- paste0(names(gwas_header), ".gwas")
 
+    ## ensure distinct values ---------
+    df_eqtl <- unique(df_eqtl)
+
+    df_gwas <- unique(df_gwas)
+
     ## join -------------------------
     df <- dplyr::inner_join(df_gwas, df_eqtl, by = c("varid.gwas" = "varid.eqtl"))
 
     ## loop over genes -----------------
     genes <- unique(df$gene_id)
     my.res <- lapply(genes, function(x) {
+                    print(x)
 
                     df_sub <- df[which(df$gene_id == x),]
 
@@ -153,10 +159,7 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
                     if ("sebeta" %in% names(eqtl_header)) {
                         dataset_eqtl$varbeta <- df_sub$sebeta.eqtl^2
                     }
-
-                    #print(head(dataset_eqtl))
-                    #print(head(dataset_gwas))
-
+    
                     ## run coloc.abf() --------------------------
                     res <- coloc::coloc.abf(dataset1=dataset_gwas, dataset2=dataset_eqtl, 
                                             p1 = p1, p2 = p2, p12 = p12)
@@ -164,7 +167,7 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
                     
                     print(res)
                     
-                    if (res$PP.H4.abf > locuscompare_threshold) {
+                    if (res$PP.H4.abf > locuscompare_thresh) {
                         locuscompare(df = df_sub, gene = x, filename = out)
                     }
                     
