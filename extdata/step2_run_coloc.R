@@ -22,7 +22,6 @@ opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
 header_eqtl <- eval(parse(text=opt$header_eqtl))
 header_gwas <- eval(parse(text=opt$header_gwas))
 
-locuscompare_thresh <- eval(parse(text=opt$locuscompare_thresh))
 info_eqtl <- eval(parse(text=opt$info_eqtl))
 info_gwas <- eval(parse(text=opt$info_gwas))
 
