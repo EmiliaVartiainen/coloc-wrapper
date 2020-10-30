@@ -32,5 +32,5 @@ run_coloc(eqtl_data = opt$eqtl, gwas_data = opt$gwas,
         p1 = opt$p1, p2 = opt$p2, p12 = opt$p12, 
         eqtl_info = info_eqtl, 
         gwas_info = info_gwas, 
-        locuscompare_thresh = locuscompare_thresh
+        locuscompare_thresh = opt$locuscompare_thresh
       )
