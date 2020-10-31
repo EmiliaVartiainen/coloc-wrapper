@@ -15,6 +15,21 @@ options(bitmapType='cairo')
 #           eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_thresh = 0)
 
 
+#' inserts \n into a string that is too long
+#' @param string 
+#' @param n length after which to insert a \n
+#' @example split_string(letters, n = 10)
+split_string <- function(string, n=40) {
+    tmp <- unlist(strsplit(string, ""))
+    pos <- c(seq(from = 1, to = length(tmp), by = n), length(tmp))
+    
+    new_title <- NULL
+    for (i in 1:(length(pos)-1)) {
+        new_title <- paste(c(new_title, tmp[pos[i]:pos[i+1]], "\n"), sep = "", collapse = "")
+    }
+    return(new_title)
+}
+
 #' plots the locus and saves it in a file
 #' @param df a data frame of one gene, contains both GWAS and eQTL data for it 
 #' @param gene the name of the gene
