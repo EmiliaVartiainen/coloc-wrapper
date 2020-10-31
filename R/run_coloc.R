@@ -15,12 +15,24 @@ options(bitmapType='cairo')
 #           eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_thresh = 0)
 
 
+split_string <- function(string, n=40) {
+    tmp <- unlist(strsplit(string, ""))
+    pos <- c(seq(from = 1, to = length(tmp), by = n), length(tmp))
+    
+    new_title <- NULL
+    for (i in 1:(length(pos)-1)) {
+        new_title <- paste(c(new_title, tmp[pos[i]:pos[i+1]], "\n"), sep = "", collapse = "")
+    }
+    return(new_title)
+}
+
 #' plots the locus and saves it in a file
 #' @param df a data frame of one gene, contains both GWAS and eQTL data for it 
 #' @param gene the name of the gene
 #' @param filename the name of the output file 
 
 locuscompare <- function(df, gene, filename) {
+
     filename <- sapply(strsplit(filename, ".", fixed = TRUE), function(x) x[1])
 
     if (!(any(names(df) %in% "pvalues.gwas"))) {
@@ -39,7 +51,7 @@ locuscompare <- function(df, gene, filename) {
     }
     plot <- ggplot2::ggplot(data = df, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "black", linetype = 3) + 
         geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
-        labs(title = paste0(filename, " - ", gene), x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
+        labs(title = split_string(basename(filename)), subtitle = gene, x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
         theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
     
     ggplot2::ggsave(filename = paste0(filename, "_locuscompare_", gene, ".png"), plot = plot, width = 15, height = 15, units = "cm")
