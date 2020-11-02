@@ -15,6 +15,10 @@ options(bitmapType='cairo')
 #           eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), locuscompare_thresh = 0)
 
 
+#' inserts \n into a string that is too long
+#' @param string 
+#' @param n length after which to insert a \n
+#' @example split_string(letters, n = 10)
 split_string <- function(string, n=40) {
     tmp <- unlist(strsplit(string, ""))
     pos <- c(seq(from = 1, to = length(tmp), by = n), length(tmp))
@@ -43,12 +47,6 @@ locuscompare <- function(df, gene, filename) {
         stop("eQTL pvalue column is needed for the locuscompare plot, but missing from the data.")
     }
 
-    if (max(-log10(df$pvalues.gwas)) < max(-log10(df$pvalues.eqtl))) { # ratio for the plot coordinates 
-        ratio <- (max(-log10(df$pvalues.eqtl))) / (max(-log10(df$pvalues.gwas)))
-    }
-    else {
-        ratio <- (max(-log10(df$pvalues.gwas))) / (max(-log10(df$pvalues.eqtl)))
-    }
     plot <- ggplot2::ggplot(data = df, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "black", linetype = 3) + 
         geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
         labs(title = split_string(basename(filename)), subtitle = gene, x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 

@@ -10,10 +10,10 @@ subset_data_file <- function(infile, region, outfile) {
   
     header <- try(system(paste("tabix ", infile, region, " -H"), intern = TRUE))
 
-    if (length(header) == 0) {
-        header <- try(system(paste("curl -s ", infile, "| zcat | head -n 1"), intern = TRUE), silent = TRUE)
-        
-        if (length(header) == 0) {
+    if (length(header) == 0) { ## try with curl
+        header <- try(system(paste("curl -s ", infile, "| zcat | head -n 1"), intern = TRUE), silent = FALSE)
+
+        if (length(header) == 0) { ## if curl doesn't work, try with zcat
             header <- system(paste("zcat ", infile, "| head -n 1"), intern = TRUE)
         }
 
