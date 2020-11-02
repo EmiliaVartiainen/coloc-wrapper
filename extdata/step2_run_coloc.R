@@ -1,6 +1,9 @@
 
+print("a")
 suppressMessages(library(optparse))
+print("b")
 source("R/run_coloc.R")
+print("c")
 
 
 option_list <- list(
@@ -14,15 +17,15 @@ option_list <- list(
     optparse::make_option(c("--header_gwas"), type="character", default="c(varid = 'rsids', pvalues = 'pval', MAF = 'maf')", help="Header of the GWAS file, named vector in quotes"),
     optparse::make_option(c("--info_gwas"), type="character", default="list(type = 'cc', s = 11006/117692, N  = 11006 + 117692)", help="Options for gwas datalist"),
     optparse::make_option(c("--info_eqtl"), type="character", default="list(type = 'quant', sdY = 1, N = 491)", help="Options for eqtl datalist"),    
-    optparse::make_option(c("--locuscompare_thresh"), type="double", default="significant", help="Which genes to plot")  
+    optparse::make_option(c("--locuscompare_thresh"), type="double", default=0.7, help="Which genes to plot")  
 
 )
 
 opt <- optparse::parse_args(optparse::OptionParser(option_list=option_list))
+
 header_eqtl <- eval(parse(text=opt$header_eqtl))
 header_gwas <- eval(parse(text=opt$header_gwas))
 
-locuscompare_thresh <- eval(parse(text=opt$locuscompare_thresh))
 info_eqtl <- eval(parse(text=opt$info_eqtl))
 info_gwas <- eval(parse(text=opt$info_gwas))
 
@@ -33,5 +36,5 @@ run_coloc(eqtl_data = opt$eqtl, gwas_data = opt$gwas,
         p1 = opt$p1, p2 = opt$p2, p12 = opt$p12, 
         eqtl_info = info_eqtl, 
         gwas_info = info_gwas, 
-        locuscompare_thresh = locuscompare_thresh
+        locuscompare_thresh = opt$locuscompare_thresh
       )
