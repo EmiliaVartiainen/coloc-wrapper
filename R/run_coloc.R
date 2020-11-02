@@ -46,14 +46,8 @@ locuscompare <- function(df, gene, filename) {
         stop("eQTL pvalue column is needed for the locuscompare plot, but missing from the data.")
     }
 
-    if (max(-log10(df$pvalues.gwas)) < max(-log10(df$pvalues.eqtl))) { # ratio for the plot coordinates 
-        ratio <- (max(-log10(df$pvalues.eqtl))) / (max(-log10(df$pvalues.gwas)))
-    }
-    else {
-        ratio <- (max(-log10(df$pvalues.gwas))) / (max(-log10(df$pvalues.eqtl)))
-    }
     plot <- ggplot2::ggplot(data = df, aes(x = -log10(pvalues.gwas), y = -log10(pvalues.eqtl))) + geom_point(size = 0.6) + geom_abline(color = "black", linetype = 3) + 
-        geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = ratio) +
+        geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) + theme_light() + coord_fixed(ratio = 1) +
         labs(title = paste0(filename, " - ", gene), x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
         theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
     
