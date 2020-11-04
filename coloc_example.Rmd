@@ -1,5 +1,5 @@
 ---
-title: "Coloc Wrapper Example"
+title: "Example"
 author: "Emilia Vartiainen"
 output: html_document
 ---
@@ -8,37 +8,49 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+The code below shows how to use the coloc-wrapper using a simple example.
+
 ## Goal 
 
-- Non coding GWAS hit, we want to know if it appears in the eQTL data
-- The region of interest is 5:128070567-128070567, gene SLC12A2.
+We want to perform colocalization for Varicose veins with all eQTLs in the region of gene *SLC12A2* (5:128070567). For eQTLs we have data from [BLUEPRINT study](http://www.ebi.ac.uk/eqtl/Studies/).
+
+## Data and region choice
+
+The question of **what datasets** and **which regions** to use for colocalization is a crucial one, as the choice affects colocalization. However, this is discussed [elsewhere]( https://doi.org/10.1371/journal.pgen.1008720
+) and not the purpose of this example script. 
 
 ## Download the data
-### 1. GWAS from FinnGen
-Varicose veins, summary statistics
-```
-gsutil -m cp gs://finngen-production-library-green/finngen_R6/finngen_R6_analysis_data/summary_stats/release/finngen_R6_I9_VARICVE.gz .
 
-gsutil -m cp gs://finngen-production-library-green/finngen_R6/finngen_R6_analysis_data/summary_stats/release/finngen_R6_I9_VARICVE.gz.tbi .
-```
+First, we need to download the data to where we are planning to run the coloc wrapper. 
+
+Important: summary statistics needs to be tabixed!
+
+### 1. GWAS from FinnGen
+
+The GWAS summary statistics for varicose veins is publicly available for data release 3. For access see https://www.finngen.fi/en/access_results.  
 
 ### 2. eQTL from the eQTL catalogue 
-BLUEPRINT study, monocytes tissue, summary statistics
+
+To download the BLUEPRINT eQTL summary statistics for monocyte tissue, we can use the wget command. 
+
 ```
 wget ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/BLUEPRINT/exon/BLUEPRINT_exon_monocyte.all.tsv.gz
 wget ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/BLUEPRINT/exon/BLUEPRINT_exon_monocyte.all.tsv.gz.tbi
 ```
 
 ## Specify the parameters
-- Region of interest is `5:128070567-128070567`. We're adding a 1500000 bp window. 
-- Sample size for the eQTL data set can be found [here](https://www.ebi.ac.uk/eqtl/Studies/)
-- Number of cases and controls for the GWAS data can be found
+To run coloc, we need to set a couple of parameters. 
+
+- Our region of interest is `5:127,570,567-128,570,567` (the variant we are focussing on is `5:128070567`, but we add a buffer window 500 kb to the left and right hand side).
+- Sample size for the eQTL data set can be found [here](https://www.ebi.ac.uk/eqtl/Studies/). 
+- Number of cases and controls for the FinnGen GWAS data can be found in the same place as the GWAS data itself (look for `finngen_*pheno_n.tsv`).
+
 ```
 gsutil cat gs://finngen-production-library-green/finngen_R6/finngen_R6_analysis_data/finngen_R6_pheno_n.tsv | grep "I9_VARICVE"
 ```
 
 ## Trimming the data
-Trimming GWAS and eQTL data according to the region of interest.
+First, GWAS and eQTL summary statistics need to be trimmed to the region of interest. 
 
 - `file`: GWAS or eQTL file path or url
 - `region`: genomic region of interest, format `chr:start-end`
@@ -48,48 +60,33 @@ Trimming GWAS and eQTL data according to the region of interest.
 ```
 Rscript extdata/step1_subset_data.R	\
 	--file=finngen_R6_I9_VARICVE.gz\
-	--region="5:126570567-129570567" \
-  --out=finngen_R6_I9_VARICVE_5_128070567_128070567.txt/
+	--region="5:127570567-128570567" \
+  --out=finngen_R6_I9_VARICVE_5_127570567-128570567.txt/
 ```
 
-#### Add ids to GWAS data
-Ids need to be in format `chr#_chrom_pos_alt_ref`
+eQTL dataset has the variant identifier in the format `chr#_chrom_pos_alt_ref`
+
 ```
-cat finngen_R6_I9_VARICVE_5_128070567_128070567.txt | awk '{print "chr"$1"_"$2"_"$3"_"$4"\t"$0}'  > tmp && mv tmp finngen_R6_I9_VARICVE_5_128070567_128070567.txt
+cat finngen_R6_I9_VARICVE_5_127570567-128570567.txt | awk '{print "chr"$1"_"$2"_"$3"_"$4"\t"$0}'  > tmp && mv tmp finngen_R6_I9_VARICVE_5_127570567-128570567.txt
 ```
 
 ### 2. eQTL
 ```
 Rscript extdata/step1_subset_data.R	\
 	--file=BLUEPRINT_exon_monocyte.all.tsv.gz\
-	--region="5:126570567-129570567" \
-  --out=BLUEPRINT_exon_monocyte_5_128070567_128070567.txt/
+	--region="5:127570567-128570567" \
+  --out=BLUEPRINT_exon_monocyte_5_127570567-128570567.txt/
 ```
+
 
 ## Running coloc
 
-- `eqtl`: eQTL summary statistics file for one region
-- `gwas`: GWAS summary statistics file for one region
-- `header_eqtl`: header of eQTL file, named vector in quotes
-- `header_gwas`: header of GWAS file, named vector in quotes 
-- `info_eqtl`: options for eQTL dataset, more info [here](https://www.rdocumentation.org/packages/coloc/versions/3.2-1/topics/coloc.abf)
-  - `type`: the type of data in dataset - either "quant" or "cc" to denote quantitative or case-control
-  - `sdY`: for a quantitative trait, the population standard deviation of the trait
-  - `N`: number of samples
-- `info_gwas`: options for GWAS dataset, more info [here](https://www.rdocumentation.org/packages/coloc/versions/3.2-1/topics/coloc.abf)
-  - `type`: the type of data in dataset - either "quant" or "cc" to denote quantitative or case-control
-  - `s`: for a case control dataset, the proportion of samples in dataset that are cases
-  - `N`: number of samples
-- `p1`: the prior probability that any random SNP in the region is associated with exactly trait 1
-- `p2`: the prior probability that any random SNP in the region is associated with exactly trait 2
-- `p3`: the prior probability that any random SNP in the region is associated with both traits
-- `locuscompare_thresh`: PP4 threshold that plots the locuscompare plot 
-- `out`: output file
+To run the colocalization, pass on the trimmed dataset: 
 
 ```
 Rscript extdata/step2_run_coloc.R	\
-	--eqtl="BLUEPRINT_exon_monocyte_5_128070567_128070567.txt" \
-	--gwas="finngen_R6_I9_VARICVE_5_128070567_128070567.txt" \
+	--eqtl="BLUEPRINT_exon_monocyte_5_127570567-128570567.txt" \
+	--gwas="finngen_R6_I9_VARICVE_5_127570567-128570567.txt" \
 	--header_eqtl="c(varid = 'variant', pvalues = 'pvalue', MAF = 'maf', gene_id = 'molecular_trait_id')" \
 	--header_gwas="c(varid = 'chr#chrom_pos_ref_alt', pvalues = 'pval', MAF = 'af_alt')" \
 	--info_gwas="list(type = 'cc', s = 20425/(20425+225735), N  = 20425+225735)" \
@@ -98,10 +95,16 @@ Rscript extdata/step2_run_coloc.R	\
 	--p2=1e-4 \
 	--p12=1e-5 \
 	--locuscompare_thresh=0.7 \
-	--out="coloc_VARICVE_BLUEPRINT_example_5_128070567_128070567.txt" \
+	--out="coloc_VARICVE_BLUEPRINT_example_5_127570567-128570567.txt" \
 ```
 
 ## Evaluating the results
+
+The coloc wrapper returns two pieces per input file: 
+
+1. colocalization results per gene
+2. locuscompare plot per gene (depending on the `locuscompare_thresh` parameter)
+
 ### Coloc results
 Columns:
 
@@ -115,7 +118,7 @@ Columns:
 
 ```{r, echo=FALSE}
 library(knitr)
-coloc_results <- data.table::fread("/Users/eahvarti/Documents/R_studio/Coloc_analysis/TESTING/coloc_VARICVE_BLUEPRINT_example_5_128070567_128070567.txt", sep = "\t")
+coloc_results <- data.table::fread("/Users/eahvarti/Documents/R_studio/Coloc_analysis/TESTING/coloc_VARICVE_BLUEPRINT_example_5_127570567-128570567.txt", sep = "\t")
 table <- coloc_results[118:125,]
 knitr::kable(table)
 ```
@@ -123,7 +126,7 @@ knitr::kable(table)
 ### Locuscompare plot
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
-knitr::include_graphics("/Users/eahvarti/Documents/R_studio/Coloc_analysis/TESTING/coloc_VARICVE_BLUEPRINT_example_5_128070567_128070567_locuscompare_ENSG00000064651.14_5_128114212_128114287.png")
+knitr::include_graphics("/Users/eahvarti/Documents/R_studio/Coloc_analysis/TESTING/coloc_VARICVE_BLUEPRINT_example_5_128070567_128070567_locuscompare_ENSG00000064651.14_5_127570567-128570567.png")
 ```
 
 
