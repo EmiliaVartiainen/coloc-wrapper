@@ -4,11 +4,11 @@ This pipeline facilitates easy usage of `coloc` (Giambartolomei et al. 2014, Wal
 
 Colocalization analysis is used to detect genetic causality between two different GWAS traits. Coloc-wrapper performs genetic colocalization analysis for GWAS and eQTL datasets in a given region using `coloc.abf()` function from Coloc R-package. It calculates posterior probabilities for the following five hypothesis for each gene in the region under the assumption of a single causal variant for each trait:
 
-$H_0$: no association <br />
-$H_1$: association to trait 1 only <br />
-$H_2$: association to trait 2 only <br />
-$H_3$: association to both traits, distinct causal variants <br />
-$H_4$: association to both traits, shared causal variant <br />
+<img src="https://render.githubusercontent.com/render/math?math=H_{0}">: no association <br />
+<img src="https://render.githubusercontent.com/render/math?math=H_{1}">: association to trait 1 only <br />
+<img src="https://render.githubusercontent.com/render/math?math=H_{2}">: association to trait 2 only <br />
+<img src="https://render.githubusercontent.com/render/math?math=H_{3}">: association to both traits, distinct causal variants <br />
+<img src="https://render.githubusercontent.com/render/math?math=H_{4}">: association to both traits, shared causal variant <br />
 
 The posterior probability of hypothesis 4, PP4, determines the possible colocalization. A common threshold for it is PP4 > 0.8.
 
