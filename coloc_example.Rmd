@@ -12,7 +12,7 @@ The code below shows how to use the coloc-wrapper using a simple example.
 
 ## Goal 
 
-We want to perform colocalization for Varicose veins with all eQTLs in the region of gene *SLC12A2* (5:128070567). For eQTLs we have data from [BLUEPRINT study](http://www.ebi.ac.uk/eqtl/Studies/).
+We want to perform colocalization for Varicose veins `I9_VARICVE` with all eQTLs in the region of gene *SLC12A2* (5:128070567). For eQTLs we have data from [BLUEPRINT study](http://www.ebi.ac.uk/eqtl/Studies/).
 
 ## Data and region choice
 
@@ -27,7 +27,7 @@ Important: summary statistics needs to be tabixed!
 
 ### 1. GWAS from FinnGen
 
-The GWAS summary statistics for varicose veins is publicly available for data release 3. For access see https://www.finngen.fi/en/access_results.  
+The GWAS summary statistics for varicose veins (`I9_VARICVE`) is publicly available for data release 3. For access see https://www.finngen.fi/en/access_results.  
 
 ### 2. eQTL from the eQTL catalogue 
 
@@ -45,9 +45,6 @@ To run coloc, we need to set a couple of parameters.
 - Sample size for the eQTL data set can be found [here](https://www.ebi.ac.uk/eqtl/Studies/). 
 - Number of cases and controls for the FinnGen GWAS data can be found in the same place as the GWAS data itself (look for `finngen_*pheno_n.tsv`).
 
-```
-gsutil cat gs://finngen-production-library-green/finngen_R6/finngen_R6_analysis_data/finngen_R6_pheno_n.tsv | grep "I9_VARICVE"
-```
 
 ## Trimming the data
 First, GWAS and eQTL summary statistics need to be trimmed to the region of interest. 
@@ -59,15 +56,15 @@ First, GWAS and eQTL summary statistics need to be trimmed to the region of inte
 ### 1. GWAS
 ```
 Rscript extdata/step1_subset_data.R	\
-	--file=finngen_R6_I9_VARICVE.gz\
+	--file=finngen_R3_I9_VARICVE.gz\
 	--region="5:127570567-128570567" \
-  --out=finngen_R6_I9_VARICVE_5_127570567-128570567.txt/
+  --out=finngen_R3_I9_VARICVE_5_127570567-128570567.txt/
 ```
 
 eQTL dataset has the variant identifier in the format `chr#_chrom_pos_alt_ref`
 
 ```
-cat finngen_R6_I9_VARICVE_5_127570567-128570567.txt | awk '{print "chr"$1"_"$2"_"$3"_"$4"\t"$0}'  > tmp && mv tmp finngen_R6_I9_VARICVE_5_127570567-128570567.txt
+cat finngen_R3_I9_VARICVE_5_127570567-128570567.txt | awk '{print "chr"$1"_"$2"_"$3"_"$4"\t"$0}'  > tmp && mv tmp finngen_R3_I9_VARICVE_5_127570567-128570567.txt
 ```
 
 ### 2. eQTL
@@ -86,7 +83,7 @@ To run the colocalization, pass on the trimmed dataset:
 ```
 Rscript extdata/step2_run_coloc.R	\
 	--eqtl="BLUEPRINT_exon_monocyte_5_127570567-128570567.txt" \
-	--gwas="finngen_R6_I9_VARICVE_5_127570567-128570567.txt" \
+	--gwas="finngen_R3_I9_VARICVE_5_127570567-128570567.txt" \
 	--header_eqtl="c(varid = 'variant', pvalues = 'pvalue', MAF = 'maf', gene_id = 'molecular_trait_id')" \
 	--header_gwas="c(varid = 'chr#chrom_pos_ref_alt', pvalues = 'pval', MAF = 'af_alt')" \
 	--info_gwas="list(type = 'cc', s = 20425/(20425+225735), N  = 20425+225735)" \
