@@ -1,4 +1,4 @@
-# COLOC pipeline
+# COLOC wrapper
 
 This pipeline facilitates easy usage of `coloc` (Giambartolomei et al. 2014, Wallace 2020) with GWAS and eQTL data. 
 
