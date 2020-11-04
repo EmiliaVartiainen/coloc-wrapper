@@ -4,20 +4,11 @@ This pipeline facilitates easy usage of `coloc` (Giambartolomei et al. 2014, Wal
 
 ## Pitfalls and things to consider
 
-1. Locuscompare population. 
-Default set to EUR
-
-For more options see https://github.com/boxiangliu/locuscomparer. 
+1. Region of interest (only one causal variant)
 
 2. Population sample difference between eqtl and gwas datasets. 
 
-See Wallace 2020. 
-
-3. Choice of parameters
-
-p1, p2, p12
-
-See Wallace 2020. 
+3. Choice of parameters: p1, p2, p12
 
 ## Usage
 
