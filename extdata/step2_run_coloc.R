@@ -1,9 +1,6 @@
 
-print("a")
 suppressMessages(library(optparse))
-print("b")
 source("R/run_coloc.R")
-print("c")
 
 
 option_list <- list(
