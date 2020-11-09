@@ -56,20 +56,22 @@ Rscript extdata/step1_subset_data.R	\
 ```
 
 ### 2. Run coloc 
-- `eqtl`: eQTL summary statistics file for one region
 - `gwas`: GWAS summary statistics file for one region
+- `eqtl`: eQTL summary statistics file for one region
+- `header_gwas`: header of GWAS file, named vector in quotes
 - `header_eqtl`: header of eQTL file, named vector in quotes
-- `header_gwas`: header of GWAS file, named vector in quotes 
-- `info_eqtl`: options for eQTL dataset:
-  - `type`: the type of data in dataset - either "quant" or "cc" to denote quantitative or case-control
-  - `s`: for a case control dataset, the proportion of samples in dataset that are cases
-  - 
-- `info_gwas`: options for GWAS dataset 
-  - ASK ABOUT THESE HOW MUCH TO WRITE
+- `info_gwas`: options for GWAS dataset, more info [here](https://www.rdocumentation.org/packages/coloc/versions/3.2-1/topics/coloc.abf)
+    - `type`: the type of data in dataset - either "quant" or "cc" to denote quantitative or case-control
+    - `s`: for a case control dataset, the proportion of samples in dataset that are cases
+    - `N`: number of samples in the dataset
+- `info_eqtl`: options for eQTL dataset, more info [here](https://www.rdocumentation.org/packages/coloc/versions/3.2-1/topics/coloc.abf)
+    - `type`: the type of data in dataset - either "quant" or "cc" to denote quantitative or case-control
+    - `sdY`: for a quantitative trait, the population standard deviation of the trait. if not given, it can be estimated from the vectors of varbeta and MAF
+    - `N`: number of samples in the dataset
 - `p1`: the prior probability that any random SNP in the region is associated with exactly trait 1
 - `p2`: the prior probability that any random SNP in the region is associated with exactly trait 2
 - `p3`: the prior probability that any random SNP in the region is associated with both traits
-- `locuscompare_thresh`: PP4 threshold that plots the locuscompare plota 
+- `locuscompare_thresh`: PP4 threshold that plots the locuscompare plots
 - `out`: output file
 
 ```
