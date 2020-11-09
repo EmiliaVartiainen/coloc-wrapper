@@ -1,4 +1,4 @@
-# COLOC pipeline
+# COLOC wrapper
 
 This pipeline facilitates easy usage of `coloc` (Giambartolomei et al. 2014, Wallace 2020) with GWAS and eQTL data. 
 
@@ -11,6 +11,7 @@ Colocalization analysis is used to detect genetic causality between two differen
 <img src="https://render.githubusercontent.com/render/math?math=H_{4}">: association to both traits, shared causal variant <br />
 
 The posterior probability of hypothesis 4, PP4, determines the possible colocalization. A common threshold for it is PP4 > 0.8.
+
 
 ## Getting started
 ### I on local machine

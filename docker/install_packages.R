@@ -12,8 +12,8 @@ for (pack in req_packages) {
 }
 
 ## snpStats
-BiocManager::install("snpStats")
+BiocManager::install("snpStats") #probably connected to locuscomparer
 
 ## locuscomparer
-remotes::install_github("boxiangliu/locuscomparer")
+# remotes::install_github("boxiangliu/locuscomparer")
 remotes::install_github("chr1swallace/coloc")
