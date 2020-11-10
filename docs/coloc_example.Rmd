@@ -8,7 +8,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The code below shows how to use the coloc-wrapper using a simple example.
+The code below shows how to use the coloc-wrapper using a simple example. 
+
+See the [GitHub](https://github.com/EmiliaVartiainen/coloc-wrapper) repository on more information and how to get coloc-wrapper running. 
 
 ## Goal 
 
@@ -40,14 +42,14 @@ tabix I9_VARICVE.gz -S 1 -b 2 -e 2 -s 1
 To download the BLUEPRINT eQTL summary statistics for monocyte tissue, we can use the wget command. 
 
 ```
-wget ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/BLUEPRINT/exon/BLUEPRINT_exon_monocyte.all.tsv.gz
-wget ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/BLUEPRINT/exon/BLUEPRINT_exon_monocyte.all.tsv.gz.tbi
+wget ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/BLUEPRINT/ge/BLUEPRINT_ge_monocyte.all.tsv.gz
+wget ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/BLUEPRINT/ge/BLUEPRINT_ge_monocyte.all.tsv.gz.tbi
 ```
 
 ## Specify the parameters
 To run coloc, we need to set a couple of parameters. 
 
-- Our region of interest is `5:127,570,567-128,570,567` (the variant we are focussing on is `5:128070567`, but we add a buffer window 500 kb to the left and right hand side).
+- Our region of interest is `5:126,570,567-129,570,567` (the variant we are focussing on is `5:128070567`, but we add a buffer window 1.5 Mb to the left and right hand side).
 - Sample size for the eQTL dataset can be found [here](https://www.ebi.ac.uk/eqtl/Studies/). 
 - Number of cases and controls for the FinnGen GWAS data can be found in the same place as the GWAS data itself (look for `finngen_*pheno_n.tsv`).
 
@@ -62,23 +64,23 @@ First, GWAS and eQTL summary statistics need to be trimmed to the region of inte
 ### 1. GWAS
 ```
 Rscript extdata/step1_subset_data.R	\
-	--file=finngen_R3_I9_VARICVE.gz\
-	--region="5:127570567-128570567" \
-  --out=finngen_R3_I9_VARICVE_5_127570567-128570567.txt/
+	  --file=I9_VARICVE.gz\
+	  --region="5:126570567-129570567" \
+    --out=finngen_R3_I9_VARICVE_5_126570567-129570567.txt
 ```
 
 eQTL dataset has the variant identifier in the format `chr#_chrom_pos_alt_ref`
 
 ```
-cat finngen_R3_I9_VARICVE_5_127570567-128570567.txt | awk '{print "chr"$1"_"$2"_"$3"_"$4"\t"$0}'  > tmp && mv tmp finngen_R3_I9_VARICVE_5_127570567-128570567.txt
+cat finngen_R3_I9_VARICVE_5_126570567-129570567.txt | awk '{print "chr"$1"_"$2"_"$3"_"$4"\t"$0}'  > tmp && mv tmp finngen_R3_I9_VARICVE_5_126570567-129570567.txt
 ```
 
 ### 2. eQTL
 ```
 Rscript extdata/step1_subset_data.R	\
-	--file=BLUEPRINT_exon_monocyte.all.tsv.gz\
-	--region="5:127570567-128570567" \
-  --out=BLUEPRINT_exon_monocyte_5_127570567-128570567.txt/
+	  --file=BLUEPRINT_exon_monocyte.all.tsv.gz\
+	  --region="5:126570567-129570567" \
+    --out=BLUEPRINT_exon_monocyte_5_126570567-129570567.txt
 ```
 
 
@@ -100,15 +102,15 @@ To run the colocalization, pass on the trimmed datasets.
     - `N`: number of samples in the dataset
 - `p1`: the prior probability that any random SNP in the region is associated with exactly trait 1
 - `p2`: the prior probability that any random SNP in the region is associated with exactly trait 2
-- `p3`: the prior probability that any random SNP in the region is associated with both traits
+- `p12`: the prior probability that any random SNP in the region is associated with both traits
 - `locuscompare_thresh`: PP4 threshold that plots the locuscompare plots
 - `out`: output file
 
 ```
 Rscript extdata/step2_run_coloc.R	\
-  --gwas="finngen_R3_I9_VARICVE_5_127570567-128570567.txt" \
-	--eqtl="BLUEPRINT_exon_monocyte_5_127570567-128570567.txt" \
-	--header_gwas="c(varid = 'chr#chrom_pos_ref_alt', pvalues = 'pval', MAF = 'af_alt')" \
+  --gwas="finngen_R3_I9_VARICVE_5_126570567-129570567.txt" \
+	--eqtl="BLUEPRINT_exon_monocyte_5_126570567-129570567.txt" \
+	--header_gwas="c(varid = 'chr#chrom_pos_ref_alt', pvalues = 'pval', MAF = 'maf')" \
 	--header_eqtl="c(varid = 'variant', pvalues = 'pvalue', MAF = 'maf', gene_id = 'molecular_trait_id')" \
 	--info_gwas="list(type = 'cc', s = 20425/(20425+225735), N  = 20425+225735)" \
 	--info_eqtl="list(type = 'quant', sdY = 1, N = 554)" \
@@ -116,7 +118,7 @@ Rscript extdata/step2_run_coloc.R	\
 	--p2=1e-4 \
 	--p12=1e-5 \
 	--locuscompare_thresh=0.7 \
-	--out="coloc_VARICVE_BLUEPRINT_5_127570567-128570567.txt" \
+	--out="coloc_VARICVE_BLUEPRINT_5_126570567-129570567.txt" \
 ```
 
 ## Evaluating the results
@@ -139,7 +141,7 @@ Columns:
 
 ```{r, echo=FALSE}
 library(DT)
-coloc_results <- data.table::fread("coloc_VARICVE_BLUEPRINT_5_127570567-128570567.txt", sep = "\t")
+coloc_results <- data.table::fread("coloc_VARICVE_BLUEPRINT_5_126570567-129570567.txt", sep = "\t")
 coloc_results$PP.H0.abf <- round(coloc_results$PP.H0.abf, 4)
 coloc_results$PP.H1.abf <- round(coloc_results$PP.H1.abf, 4)
 coloc_results$PP.H2.abf <- round(coloc_results$PP.H2.abf, 4)
@@ -152,7 +154,7 @@ datatable(coloc_results)
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
 library(knitr)
-knitr::include_graphics("coloc_VARICVE_BLUEPRINT_5_127570567-128570567_locuscompare_ENSG00000064651.14_5_128187026_128188442.png")
+knitr::include_graphics("coloc_VARICVE_BLUEPRINT_5_126570567-129570567_locuscompare_ENSG00000245937.png")
 ```
 
 
