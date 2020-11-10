@@ -34,8 +34,9 @@ split_string <- function(string, n=40) {
 #' @param df a data frame of one gene, contains both GWAS and eQTL data for it 
 #' @param gene the name of the gene
 #' @param filename the name of the output file 
+#' @param coloc coloc results (h0-h4 columns)
 
-locuscompare <- function(df, gene, filename) {
+locuscompare <- function(df, gene, filename, coloc = NULL) {
 
     filename <- sapply(strsplit(filename, ".", fixed = TRUE), function(x) x[1])
 
@@ -52,6 +53,14 @@ locuscompare <- function(df, gene, filename) {
         labs(title = split_string(basename(filename)), subtitle = gene, x = "GWAS -log10(P)", y = "eQTL -log10(P)") + 
         theme(axis.text.x = element_text(size = 7), axis.text.y = element_text(size = 7), axis.text = element_text(size = 7), plot.title = element_text(size = 12))
     
+    if (!is.null(coloc)) {
+        thresh <- 0.7 ## needs to be > 0.2
+        ind <- which(coloc[1,] == max(coloc[1,-1]))
+        coloc_lab <- paste(names(coloc)[ind], format(coloc[,ind], dig = 2), sep = "=")
+
+        plot <- plot + labs(caption = coloc_lab)
+    }
+
     ggplot2::ggsave(filename = paste0(filename, "_locuscompare_", gene, ".png"), plot = plot, width = 15, height = 15, units = "cm")
     print(plot)
 }
@@ -89,7 +98,7 @@ locuscompare <- function(df, gene, filename) {
 #'    return_object = TRUE, return_file = FALSE,
 #'    out = "tmp.txt", 
 #'    eqtl_info = list(type = "quant", sdY = 1, N = 491), 
-#'    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006	+ 117692), 
+#'    gwas_info = list(type = "cc", s = 11006/117692, N  = 11006 + 117692), 
 #'    gwas_header = c(varid = "rsids", pvalues = "pval", MAF = "maf"), #, beta = "beta", se = "sebeta"),
 #'    eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"), 
 #'    locuscompare_thresh = 0,
@@ -174,11 +183,9 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
                     res <- coloc::coloc.abf(dataset1=dataset_gwas, dataset2=dataset_eqtl, 
                                             p1 = p1, p2 = p2, p12 = p12)
                     res <- as.data.frame(t(res$summary))
-                    
-                    print(res)
-                    
+                                        
                     if (res$PP.H4.abf > locuscompare_thresh) {
-                        locuscompare(df = df_sub, gene = x, filename = out)
+                        locuscompare(df = df_sub, gene = x, filename = out, coloc = res)
                     }
                     
                  
