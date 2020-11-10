@@ -104,6 +104,14 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
     eqtl_header = c(varid = "rsid", pvalues = "pvalue", MAF = "maf", gene_id = "gene_id"),
     locuscompare_thresh =  1) {
     
+    ## check if files empty --------------------
+    if (file.info(gwas_data)$size == 0) {
+        stop("GWAS file is empty.")
+    }
+
+    if (file.info(eqtl_data)$size == 0) {
+        stop("GWAS file is empty.")
+    }
     ## check if beta/se or pval/maf --------------------
 
     ## read data -----------------
@@ -113,7 +121,10 @@ run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p1
     df_gwas <- data.table::fread(file = gwas_data, select= unname(gwas_header))
     names(df_gwas) <- paste0(names(gwas_header), ".gwas")
 
+    
+
     ## ensure distinct values ---------
+    ## (a little dodgy)
     df_eqtl <- unique(df_eqtl)
 
     df_gwas <- unique(df_gwas)
