@@ -107,6 +107,10 @@ For more details to output columns see [coloc-package](https://chr1swallace.gith
 
 ### Locuscompare
 
+## Alternative coloc-wrapper
+
+An alternative coloc-wrapper: https://github.com/eQTL-Catalogue/colocalisation
+
 
 ## Pitfalls and things to consider
 
