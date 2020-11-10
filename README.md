@@ -2,7 +2,9 @@
 
 This pipeline facilitates easy usage of `coloc` (Giambartolomei et al. 2014, Wallace 2020) with GWAS and eQTL data. 
 
-Colocalization analysis is used to detect genetic causality between two different GWAS traits. Coloc-wrapper performs genetic colocalization analysis for GWAS and eQTL datasets in a given region using `coloc.abf()` function from Coloc R-package. It calculates posterior probabilities for the following five hypothesis for each gene in the region under the assumption of a single causal variant for each trait:
+Colocalization analysis is used to detect genetic causality between two different GWAS traits. 
+
+Coloc-wrapper performs genetic colocalization analysis for GWAS and eQTL datasets in a given region using `coloc.abf()` function from Coloc R-package. It calculates posterior probabilities for the following five hypothesis for each gene in the region under the assumption of a single causal variant for each trait:
 
 <img src="https://render.githubusercontent.com/render/math?math=H_{0}">: no association <br />
 <img src="https://render.githubusercontent.com/render/math?math=H_{1}">: association to trait 1 only <br />
@@ -14,6 +16,9 @@ The posterior probability of hypothesis 4, PP4, determines the possible colocali
 
 
 ## Getting started
+
+To get started, look at this minimal [example](https://emiliavartiainen.github.io/coloc-wrapper/coloc_example.html).
+
 ### I on local machine
 - R version >3.6.2
 - R-packages: "coloc", "data.table", "ggplot2", "optparse", "R.utils"
@@ -33,16 +38,16 @@ The input files are the following:
 
 ### 1. GWAS summary statistics
 
-
 ### 2. eQTL summary statistics
-- eQTL data can be found here: https://www.ebi.ac.uk/eqtl/ 
+eQTL data can be found here: https://www.ebi.ac.uk/eqtl/ 
 
-### 3. Region 
+### 3. Genomic region 
 
 ## Usage
-Running coloc-wrapper involves two steps: <br />
-1. Trimming data, both GWAS and eQTL, according to a predefined region <br />
-2. Running coloc <br />
+Running coloc-wrapper involves two steps:
+
+1. Trimming data, both GWAS and eQTL, according to a predefined region
+1. Running coloc
 
 ### 1. Trimming data
 - `file`: GWAS or eQTL file path or url
@@ -105,30 +110,9 @@ Rscript extdata/step2_run_coloc.R	\
 
 For more details to output columns see [coloc-package](https://chr1swallace.github.io/coloc/articles/a03_enumeration.html#introduction).
 
-### Locuscompare
-
 ## Alternative coloc-wrapper
 
 An alternative coloc-wrapper: https://github.com/eQTL-Catalogue/colocalisation
-
-
-## Pitfalls and things to consider
-
-1. Locuscompare population. 
-Default set to EUR
-
-For more options see https://github.com/boxiangliu/locuscomparer. 
-
-2. Population sample difference between eqtl and gwas datasets. 
-
-See Wallace 2020. 
-
-3. Choice of parameters
-
-p1, p2, p12
-
-See Wallace 2020. 
-
 
 ## Unit tests
 
