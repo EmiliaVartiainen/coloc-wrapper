@@ -58,7 +58,7 @@ Running coloc-wrapper involves two steps:
 Rscript extdata/step1_subset_data.R	\
 	--file=ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/Lepik_2017/ge/Lepik_2017_ge_blood.all.tsv.gz \
 	--region="1:10565520-10965520" \
-  --out=tmp.txt
+  	--out=tmp.txt
 ```
 
 ### 2. Run coloc 
