@@ -152,7 +152,7 @@ datatable(coloc_results)
 
 ```{r, echo=FALSE, out.width = "80%", fig.align = "center"}
 library(knitr)
-knitr::include_graphics("coloc_VARICVE_BLUEPRINT_5_127570567-128570567_locuscompare_ENSG00000245937.7_5_128021528_128024026.png")
+knitr::include_graphics("coloc_VARICVE_BLUEPRINT_5_127570567-128570567_locuscompare_ENSG00000064651.14_5_128187026_128188442.png")
 ```
 
 
