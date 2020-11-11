@@ -31,12 +31,6 @@ Important: summary statistics needs to be tabixed!
 
 The GWAS summary statistics for varicose veins (`I9_VARICVE`) is publicly available for data release 3. For access see https://www.finngen.fi/en/access_results.  
 
-R3 FinnGen GWAS files need to be reindexed. Here's the command:
-
-```
-tabix I9_VARICVE.gz -S 1 -b 2 -e 2 -s 1
-```
-
 ### 2. eQTL from the eQTL catalogue 
 
 To download the BLUEPRINT eQTL summary statistics for monocyte tissue, we can use the wget command. 
