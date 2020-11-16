@@ -76,7 +76,7 @@ Rscript extdata/step1_subset_data.R	\
     - `N`: number of samples in the dataset
 - `p1`: the prior probability that any random SNP in the region is associated with exactly trait 1
 - `p2`: the prior probability that any random SNP in the region is associated with exactly trait 2
-- `p3`: the prior probability that any random SNP in the region is associated with both traits
+- `p12`: the prior probability that any random SNP in the region is associated with both traits
 - `locuscompare_thresh`: PP4 threshold that plots the locuscompare plots
 - `out`: output file
 
@@ -90,7 +90,7 @@ Rscript extdata/step2_run_coloc.R	\
 	--info_eqtl="list(type = 'quant', sdY = 1, N = 491)" \
 	--p1=1e-4 \
 	--p2=1e-4 \
-	--p12=1e-5 \
+	--p12=5e-6 \
 	--locuscompare_thresh=0.8 \
 	--out="Coloc_example.txt" \
 ```

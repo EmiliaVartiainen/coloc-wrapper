@@ -110,7 +110,7 @@ Rscript extdata/step2_run_coloc.R	\
 	--info_eqtl="list(type = 'quant', sdY = 1, N = 554)" \
 	--p1=1e-4 \
 	--p2=1e-4 \
-	--p12=1e-5 \
+	--p12=5e-6 \
 	--locuscompare_thresh=0.7 \
 	--out="coloc_VARICVE_BLUEPRINT_5_126570567-129570567.txt" \
 ```
