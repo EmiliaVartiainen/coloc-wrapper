@@ -60,7 +60,7 @@ First, GWAS and eQTL summary statistics need to be trimmed to the region of inte
 Rscript extdata/step1_subset_data.R	\
 	 --file=I9_VARICVE.gz\
 	 --region="5:126570567-129570567" \
-    --out=finngen_R3_I9_VARICVE_5_126570567-129570567.txt
+   --out=finngen_R3_I9_VARICVE_5_126570567-129570567.txt
 ```
 
 eQTL dataset has the variant identifier in the format `chr#_chrom_pos_alt_ref`
@@ -74,7 +74,7 @@ cat finngen_R3_I9_VARICVE_5_126570567-129570567.txt | awk '{print "chr"$1"_"$2"_
 Rscript extdata/step1_subset_data.R	\
 	 --file=BLUEPRINT_ge_monocyte.all.tsv.gz\
 	 --region="5:126570567-129570567" \
-    --out=BLUEPRINT_ge_monocyte_5_126570567-129570567.txt
+   --out=BLUEPRINT_ge_monocyte_5_126570567-129570567.txt
 ```
 
 
@@ -102,7 +102,7 @@ To run the colocalization, pass on the trimmed datasets.
 
 ```
 Rscript extdata/step2_run_coloc.R	\
-    --gwas="finngen_R3_I9_VARICVE_5_126570567-129570567.txt" \
+  --gwas="finngen_R3_I9_VARICVE_5_126570567-129570567.txt" \
 	--eqtl="BLUEPRINT_ge_monocyte_5_126570567-129570567.txt" \
 	--header_gwas="c(varid = 'chr#chrom_pos_ref_alt', pvalues = 'pval', MAF = 'maf')" \
 	--header_eqtl="c(varid = 'variant', pvalues = 'pvalue', MAF = 'maf', gene_id = 'molecular_trait_id')" \
