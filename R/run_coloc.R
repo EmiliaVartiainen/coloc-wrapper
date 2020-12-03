@@ -105,7 +105,7 @@ locuscompare <- function(df, gene, filename, coloc = NULL) {
 #'   )
 
 
-run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p12 = 1e-5, 
+run_coloc <- function(eqtl_data, gwas_data, out = NULL, p1 = 1e-4, p2 = 1e-4, p12 = 5e-6, 
     return_object = FALSE, return_file = TRUE, 
     eqtl_info = list(type = "quant", sdY = 1, N = NA), 
     gwas_info = list(type = "cc", s = NA, N = NA), 
