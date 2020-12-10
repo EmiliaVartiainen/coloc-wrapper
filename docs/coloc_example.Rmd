@@ -72,7 +72,7 @@ cat finngen_R3_I9_VARICVE_5_126570567-129570567.txt | awk '{print "chr"$1"_"$2"_
 ### 2. eQTL
 ```
 Rscript extdata/step1_subset_data.R	\
-	  --file=ftp://ftp.ebi.ac.uk/pub/databases/spot/eQTL/csv/BLUEPRINT/ge/BLUEPRINT_ge_monocyte.all.tsv.gz\
+	  --file=BLUEPRINT_ge_monocyte.all.tsv.gz\
 	  --region="5:126570567-129570567" \
     --out=BLUEPRINT_ge_monocyte_5_126570567-129570567.txt
 ```
