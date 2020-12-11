@@ -9,7 +9,7 @@ option_list <- list(
     optparse::make_option(c("--out"), type="character", default="out.txt", help="outputfile"), 
     optparse::make_option(c("--p1"), type="double", default=1e-4, help="the prior probability that any random SNP in the region is associated with exactly trait 1"), 
     optparse::make_option(c("--p2"), type="double", default=1e-4, help="the prior probability that any random SNP in the region is associated with exactly trait 2"), 
-    optparse::make_option(c("--p12"), type="double", default=1e-5, help="the prior probability that any random SNP in the region is associated with both traits"),
+    optparse::make_option(c("--p12"), type="double", default=5e-6, help="the prior probability that any random SNP in the region is associated with both traits"),
     optparse::make_option(c("--header_eqtl"), type="character", default="c(varid = 'rsids', pvalues = 'pval', MAF = 'maf')", help="Header of the eQTL file, named vector in quotes"),
     optparse::make_option(c("--header_gwas"), type="character", default="c(varid = 'rsids', pvalues = 'pval', MAF = 'maf')", help="Header of the GWAS file, named vector in quotes"),
     optparse::make_option(c("--info_gwas"), type="character", default="list(type = 'cc', s = 11006/117692, N  = 11006 + 117692)", help="Options for gwas datalist"),

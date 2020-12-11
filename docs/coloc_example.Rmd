@@ -58,9 +58,9 @@ First, GWAS and eQTL summary statistics need to be trimmed to the region of inte
 ### 1. GWAS
 ```
 Rscript extdata/step1_subset_data.R	\
-	  --file=I9_VARICVE.gz\
-	  --region="5:126570567-129570567" \
-    --out=finngen_R3_I9_VARICVE_5_126570567-129570567.txt
+	 --file=I9_VARICVE.gz\
+	 --region="5:126570567-129570567" \
+   --out=finngen_R3_I9_VARICVE_5_126570567-129570567.txt
 ```
 
 eQTL dataset has the variant identifier in the format `chr#_chrom_pos_alt_ref`
@@ -72,9 +72,9 @@ cat finngen_R3_I9_VARICVE_5_126570567-129570567.txt | awk '{print "chr"$1"_"$2"_
 ### 2. eQTL
 ```
 Rscript extdata/step1_subset_data.R	\
-	  --file=BLUEPRINT_ge_monocyte.all.tsv.gz\
-	  --region="5:126570567-129570567" \
-    --out=BLUEPRINT_ge_monocyte_5_126570567-129570567.txt
+	 --file=BLUEPRINT_ge_monocyte.all.tsv.gz\
+	 --region="5:126570567-129570567" \
+   --out=BLUEPRINT_ge_monocyte_5_126570567-129570567.txt
 ```
 
 
@@ -110,7 +110,7 @@ Rscript extdata/step2_run_coloc.R	\
 	--info_eqtl="list(type = 'quant', sdY = 1, N = 554)" \
 	--p1=1e-4 \
 	--p2=1e-4 \
-	--p12=1e-5 \
+	--p12=5e-6 \
 	--locuscompare_thresh=0.7 \
 	--out="coloc_VARICVE_BLUEPRINT_5_126570567-129570567.txt" \
 ```
